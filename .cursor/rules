@@ -1,0 +1,270 @@
+## `.cursorrules` for YATA Project
+
+```markdown
+# YATA Todo App - Cursor Rules
+
+## Project Context
+- React Native + TypeScript todo app with infinite date scrolling
+- Developer is experienced in Python but NEW to JavaScript/TypeScript/React Native
+- Using Expo Router, AsyncStorage initially, React Native Gesture Handler
+- Building for iOS and macOS first, Android later
+
+## Code Style Requirements
+
+### ALWAYS Include Comments
+- Add clear comments explaining WHY, not just what
+- Include type annotations with explanatory comments for complex types
+- Add examples in comments for non-obvious functions
+```typescript
+// GOOD: Explains the why and gives context
+// We normalize to midnight to group todos by day, ignoring time
+// This prevents 11:59pm and 12:01am todos from appearing in different sections
+const normalizeToDay = (date: Date): Date => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
+// BAD: Obvious comment
+// This adds 1 to x
+const increment = (x) => x + 1;
+```
+
+### TypeScript Preferences
+- ALWAYS use explicit types for function parameters and return values
+- Use interfaces over types for objects (easier to read for beginners)
+- Include null/undefined in types explicitly when needed
+```typescript
+// Clear and explicit
+interface Todo {
+  id: string;
+  title: string;
+  completedAt: Date | null;  // Explicitly show it can be null
+}
+
+function getTodoById(id: string): Todo | undefined {
+  // Return type shows it might not find the todo
+}
+```
+
+## Implementation Philosophy
+
+### NO MOCKING - Build Real Features
+- When we change direction, you should re-use the previous files -- we arent trying to proliferate a million scripts
+- Never title things 'new' 'old' 'improved' etc, and try to refrain from leaving comments that are overly historical
+- Never use setTimeout to "simulate" async operations
+- Never return fake data when real data is available
+- Implement actual storage from day 1, not in-memory arrays
+- If a feature needs an API, build a simple local version first
+
+```typescript
+// DON'T DO THIS
+const fetchTodos = async () => {
+  // Simulating API call
+  return new Promise(resolve => {
+    setTimeout(() => resolve(mockTodos), 1000);
+  });
+};
+
+// DO THIS INSTEAD
+const fetchTodos = async (): Promise<Todo[]> => {
+  const stored = await AsyncStorage.getItem('todos');
+  return stored ? JSON.parse(stored) : [];
+};
+```
+
+### Error Philosophy - Fix Root Causes
+- NEVER silently catch errors
+- ALWAYS log the full error with context
+- Fix the cause, don't paper over symptoms
+- If you must handle an error, explain WHY it might occur
+
+```typescript
+// DON'T DO THIS
+try {
+  await saveTodo(todo);
+} catch (e) {
+  // Silently failing
+}
+
+// DO THIS
+try {
+  await saveTodo(todo);
+} catch (error) {
+  // This should only fail if storage is full or permissions denied
+  console.error('Failed to save todo:', { 
+    error, 
+    todo, 
+    storageInfo: await AsyncStorage.getAllKeys() 
+  });
+  
+  // Fix the root cause:
+  // - Check storage limits
+  // - Verify AsyncStorage is properly linked
+  // - Check if we're exceeding key length limits (2MB on Android)
+  throw error; // Re-throw to handle upstream
+}
+```
+
+## React Native Specific Patterns
+
+### Component Structure
+- Functional components only (no class components)
+- One component per file
+- Props interface defined above component
+- Destructure props in function signature
+
+```typescript
+// TodoItem.tsx
+interface TodoItemProps {
+  todo: Todo;
+  onComplete: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+// Destructure for clarity
+export const TodoItem = ({ todo, onComplete, onDelete }: TodoItemProps) => {
+  // Component logic here
+};
+```
+
+### State Management
+- useState for simple local state
+- useReducer when state updates depend on previous state
+- NO Redux/MobX until genuinely needed (>5 components sharing state)
+
+### AsyncStorage Patterns
+- Always JSON.stringify/parse (AsyncStorage only stores strings)
+- Always handle the "first run" case (no data exists)
+- Batch operations when possible
+
+```typescript
+// Helper to ensure type safety with AsyncStorage
+const storage = {
+  getTodos: async (): Promise<Todo[]> => {
+    try {
+      const json = await AsyncStorage.getItem('todos');
+      // Handle first run when no data exists
+      if (!json) return [];
+      return JSON.parse(json);
+    } catch (error) {
+      // Only fails if data corrupted - investigate why
+      console.error('Corrupted todo data:', error);
+      return [];
+    }
+  },
+  
+  setTodos: async (todos: Todo[]): Promise<void> => {
+    // Validate before saving to prevent corruption
+    if (!Array.isArray(todos)) {
+      throw new Error(`Expected array, got ${typeof todos}`);
+    }
+    await AsyncStorage.setItem('todos', JSON.stringify(todos));
+  }
+};
+```
+
+## Debugging Approach
+
+### When Things Break
+1. Check the actual data structure first (console.log with labels)
+2. Verify types match expectations (TypeScript may be lying)
+3. Check platform differences (iOS vs Android behavior)
+4. Look at actual storage/network payloads, not just app state
+
+### Debugging Tools to Use
+- `console.log` with descriptive labels: `console.log('=== TODOS AFTER DELETE ===', todos)`
+- React Native Debugger for state inspection
+- Expo Go app logs (shake device → Show Developer Menu)
+- AsyncStorage debugging: `await AsyncStorage.getAllKeys()` to see what's stored
+
+## Performance Guidelines
+
+### Measure First
+- Don't optimize until you see actual lag
+- Use React DevTools Profiler when needed
+- Keep console.time/timeEnd for slow operations
+
+```typescript
+// Only if users complain about speed
+console.time('Filter todos');
+const filtered = todos.filter(t => !t.completed);
+console.timeEnd('Filter todos');
+// If this takes >16ms, then optimize
+```
+
+## Common React Native Gotchas for Python Devs
+
+1. **Arrays/Objects are compared by reference, not value**
+```typescript
+// This won't trigger re-render even though todo changed
+const updated = todos;
+updated[0].title = "New";
+setTodos(updated); // WRONG - same reference
+
+// Do this instead
+setTodos([...todos]); // New array reference
+```
+
+2. **Async functions don't work in useEffect without wrapper**
+```typescript
+// Can't make useEffect async directly
+useEffect(async () => {}, []); // WRONG
+
+// Correct pattern
+useEffect(() => {
+  const load = async () => {
+    const data = await fetchTodos();
+    setTodos(data);
+  };
+  load();
+}, []);
+```
+
+3. **State updates are batched and async**
+```typescript
+// State won't update immediately
+setCount(count + 1);
+console.log(count); // Still shows old value!
+
+// Use callback form for dependent updates
+setCount(prev => prev + 1);
+```
+
+## File Naming Conventions
+- Components: PascalCase (TodoItem.tsx)
+- Utilities: camelCase (dateHelpers.ts)
+- Types: PascalCase with .types.ts suffix (Todo.types.ts)
+- Hooks: camelCase with 'use' prefix (useTodos.ts)
+
+## When Asking for Code
+
+### Provide Real Implementations
+- Working code > placeholder code
+- Actual data structures > mock data
+- Real storage > in-memory arrays
+- Actual styling > "add styles later" comments
+
+### Include Edge Cases
+- Empty states (no todos)
+- Loading states (if async)
+- Error states (storage full, corrupted data)
+- Platform differences (iOS vs Android)
+
+### Explain Non-Obvious Choices
+- Why this data structure over that one
+- Why this library over alternatives
+- Why this pattern matters for React Native specifically
+
+## Testing Approach
+- Only test what breaks (data logic, date calculations)
+- Don't test React Native components until stable
+- Test actual storage operations, not mocks
+
+## Remember
+The developer is learning this stack. When suggesting code:
+- Explain React Native specific patterns
+- Call out JavaScript quirks that differ from Python
+- Show the "wrong way" alongside the "right way"
+- Include links to docs for new concepts
+```
+
+This rules file will help Cursor understand that you want real, working code with good explanations, not quick mocks or band-aid fixes. It emphasizes your Python background and need for comments while pushing for actual implementations over placeholders.

@@ -98,7 +98,7 @@ yata/
 ├── types/           # TypeScript definitions
 │   └── todo.ts         # Todo interfaces
 ├── utils/           # Helper functions
-│   └── dateUtis.ts    # Date manipulation utilities
+│   └── dateUtils.ts    # Date manipulation utilities
 └── assets/          # Images and icons
 ```
 

@@ -50,7 +50,7 @@ export const MainScreen: React.FC = () => {
   const handleAddTodo = async (title: string, scheduledFor: Date) => {
     try {
       const newTodo: Todo = {
-        id: crypto.randomUUID(),
+        id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title,
         createdAt: new Date(),
         scheduledFor,
@@ -124,6 +124,44 @@ export const MainScreen: React.FC = () => {
     );
   };
 
+  // Edit todo
+  const handleEdit = async (id: string, newTitle: string) => {
+    try {
+      const todo = await todoStore.getTodo(id);
+      if (todo) {
+        const updatedTodo = {
+          ...todo,
+          title: newTitle,
+        };
+        await todoStore.upsert(updatedTodo);
+        await loadTodos();
+      }
+    } catch (error) {
+      console.error('Failed to edit todo:', error);
+      Alert.alert('Error', 'Failed to edit todo');
+    }
+  };
+
+  // Duplicate todo
+  const handleDuplicate = async (originalTodo: Todo) => {
+    try {
+      const newTodo: Todo = {
+        id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: `${originalTodo.title} (copy)`,
+        notes: originalTodo.notes,
+        createdAt: new Date(),
+        scheduledFor: originalTodo.scheduledFor,
+        deleted: false,
+      };
+
+      await todoStore.upsert(newTodo);
+      await loadTodos();
+    } catch (error) {
+      console.error('Failed to duplicate todo:', error);
+      Alert.alert('Error', 'Failed to duplicate todo');
+    }
+  };
+
   // Pull to refresh
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -146,6 +184,8 @@ export const MainScreen: React.FC = () => {
         onAddTodo={handleAddTodo}
         onToggleComplete={handleToggleComplete}
         onDelete={handleDelete}
+        onEdit={handleEdit}
+        onDuplicate={handleDuplicate}
       />
     );
   };

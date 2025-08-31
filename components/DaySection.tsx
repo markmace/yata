@@ -19,6 +19,8 @@ interface DaySectionProps {
   onAddTodo: (title: string, date: Date) => void;
   onToggleComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (id: string, newTitle: string) => void;
+  onDuplicate: (todo: Todo) => void;
   onTodoPress?: (todo: Todo) => void;
 }
 
@@ -28,10 +30,14 @@ export const DaySection: React.FC<DaySectionProps> = ({
   onAddTodo,
   onToggleComplete,
   onDelete,
+  onEdit,
+  onDuplicate,
   onTodoPress,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
+  const [dragMode, setDragMode] = useState(false);
+  const [draggingItem, setDraggingItem] = useState<string | null>(null);
 
   const handleAddTodo = () => {
     const trimmedValue = inputValue.trim();
@@ -51,15 +57,33 @@ export const DaySection: React.FC<DaySectionProps> = ({
     setShowInput(false);
   };
 
+  const handleDragStart = (todoId: string) => {
+    setDraggingItem(todoId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingItem(null);
+  };
+
+  const handleLongPress = () => {
+    setDragMode(!dragMode);
+  };
+
   const activeTodos = todos.filter(todo => !todo.completedAt);
   const completedTodos = todos.filter(todo => !!todo.completedAt);
 
+  const ContainerComponent = Platform.OS === 'web' ? View : BlurView;
+  const containerProps = Platform.OS === 'web' ? {} : { intensity: 20 };
+
   return (
-    <BlurView intensity={20} style={styles.container}>
+    <ContainerComponent {...containerProps} style={styles.container}>
       <View style={styles.innerContainer}>
         {/* Day Header */}
         <View style={styles.header}>
-          <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
+          <TouchableOpacity onLongPress={handleLongPress}>
+            <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
+            {dragMode && <Text style={styles.dragModeText}>Drag mode active</Text>}
+          </TouchableOpacity>
           <View style={styles.headerRight}>
             {activeTodos.length > 0 && (
               <View style={styles.countBadge}>
@@ -100,7 +124,12 @@ export const DaySection: React.FC<DaySectionProps> = ({
             todo={todo}
             onToggleComplete={onToggleComplete}
             onDelete={onDelete}
+            onEdit={onEdit}
+            onDuplicate={onDuplicate}
             onPress={onTodoPress}
+            isDragEnabled={dragMode}
+            onDragStart={() => handleDragStart(todo.id)}
+            onDragEnd={handleDragEnd}
           />
         ))}
 
@@ -116,6 +145,8 @@ export const DaySection: React.FC<DaySectionProps> = ({
                 todo={todo}
                 onToggleComplete={onToggleComplete}
                 onDelete={onDelete}
+                onEdit={onEdit}
+                onDuplicate={onDuplicate}
                 onPress={onTodoPress}
               />
             ))}
@@ -129,7 +160,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
           </View>
         )}
       </View>
-    </BlurView>
+    </ContainerComponent>
   );
 };
 
@@ -162,6 +193,12 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.medium,
     color: theme.colors.text.primary,
     letterSpacing: -0.3,
+  },
+  dragModeText: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.jade.main,
+    marginTop: 2,
   },
   headerRight: {
     flexDirection: 'row',

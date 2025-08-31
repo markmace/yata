@@ -1,8 +1,8 @@
 ![YATA Logo](docs/yata_logo_dark_text.png)
 
-A todo app that believes today deserves your full attention.
+Yet Another TODO App. 
 
-Built around the simple idea that productivity tools should fade into the background, not demand center stage. YATA organizes tasks by days, focuses on the present moment, and lets you move fluidly between what matters now and what might matter tomorrow.
+Built around the simple ideas around focusing most on today and that productivity tools should fade into the background, not demand center stage. YATA organizes tasks by days, focuses on the present moment, and lets you move fluidly between what matters now and what might matter tomorrow.
 
 ## Getting Started
 
@@ -75,5 +75,3 @@ The app uses AsyncStorage for local data persistence, React Native Gesture Handl
 ## Development
 
 To add new features, start by defining types in `/types`, implement the logic in `/services`, and build UI components in `/components`. The theme system in `/styles/theme.ts` provides consistent colors and spacing.
-
-The app uses optimistic updates - the UI responds immediately while data syncs in the background. This keeps interactions feeling fast and responsive.

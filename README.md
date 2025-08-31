@@ -1,4 +1,4 @@
-![YATA Logo](docs/YATA%20Logo%20dark%20text.png)
+![YATA Logo](docs/yata_logo_dark_text.png)
 
 A todo app that believes today deserves your full attention.
 

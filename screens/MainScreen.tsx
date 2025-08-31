@@ -7,6 +7,8 @@ import {
   Alert,
   useColorScheme,
   Platform,
+  Image,
+  Text,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -211,6 +213,11 @@ export const MainScreen: React.FC = () => {
     >
       <StatusBar style="light" />
       
+      {/* Minimal Logo Header */}
+      <View style={styles.header}>
+        <Text style={styles.logoText}>YATA</Text>
+      </View>
+      
       <FlatList
         data={days}
         renderItem={renderDaySection}
@@ -234,9 +241,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  header: {
+    paddingTop: 60, // Account for status bar
+    paddingBottom: theme.spacing.md,
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 28,
+    fontWeight: '300',
+    color: theme.colors.text.primary,
+    letterSpacing: 3,
+    opacity: 0.7,
+  },
   contentContainer: {
     padding: theme.spacing.lg,
     paddingBottom: theme.spacing.xxl * 2,
-    paddingTop: theme.spacing.xl,
+    paddingTop: theme.spacing.sm, // Reduced since we have header
   },
 });

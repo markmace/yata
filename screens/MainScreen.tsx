@@ -209,7 +209,7 @@ export const MainScreen: React.FC = () => {
       colors={[theme.colors.background.secondary, theme.colors.background.tertiary]}
       style={styles.container}
     >
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       
       <FlatList
         data={days}

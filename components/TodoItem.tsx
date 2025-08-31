@@ -6,13 +6,16 @@ import {
   StyleSheet,
   Platform,
   Animated,
-  Modal,
   TextInput,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { Swipeable, PanGestureHandler, State } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 import { Todo } from '../types/todo';
 import { theme } from '../styles/theme';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 interface TodoItemProps {
   todo: Todo;
@@ -22,14 +25,8 @@ interface TodoItemProps {
   onEdit?: (id: string, newTitle: string) => void;
   onDuplicate?: (todo: Todo) => void;
   onPress?: (todo: Todo) => void;
-  isDragEnabled?: boolean;
-  isBeingDragged?: boolean;
-  isDragOver?: boolean;
-  onDragStart?: () => void;
-  onDragEnd?: () => void;
-  onDragOver?: () => void;
-  onDrop?: (fromIndex: number) => void;
-  onShowMenu?: (todo: Todo, menuRef: any) => void;
+  drag?: () => void; // For react-native-draggable-flatlist
+  isActive?: boolean; // For react-native-draggable-flatlist
 }
 
 export const TodoItem: React.FC<TodoItemProps> = ({
@@ -40,23 +37,12 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   onEdit,
   onDuplicate,
   onPress,
-  isDragEnabled = false,
-  isBeingDragged = false,
-  isDragOver = false,
-  onDragStart,
-  onDragEnd,
-  onDragOver,
-  onDrop,
-  onShowMenu,
+  drag,
+  isActive = false,
 }) => {
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.title);
-  const [isDragging, setIsDragging] = useState(false);
   const swipeableRef = useRef<Swipeable>(null);
-  const menuButtonRef = useRef<TouchableOpacity>(null);
-  const translateY = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   
   const isCompleted = !!todo.completedAt;
@@ -68,30 +54,42 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   };
 
   const handleToggleComplete = () => {
+    // Haptic feedback for completion
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     onToggleComplete(todo.id);
+    // Close swipeable after action
+    swipeableRef.current?.close();
   };
 
   const handleDelete = () => {
-    console.log('Delete clicked for todo:', todo.id);
-    console.log('onDelete function:', onDelete);
-    if (onDelete) {
-      console.log('Calling onDelete with id:', todo.id);
-      onDelete(todo.id);
-      console.log('onDelete called successfully');
-    } else {
-      console.log('ERROR: onDelete is not defined');
+    // Haptic feedback for deletion
+    if (Platform.OS === 'ios') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
-    setShowMenu(false);
+    if (onDelete) {
+      onDelete(todo.id);
+    }
+    swipeableRef.current?.close();
   };
 
   const handleEdit = () => {
+    // Light haptic for edit
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setIsEditing(true);
-    setShowMenu(false);
+    swipeableRef.current?.close();
   };
 
   const handleEditSave = () => {
     const trimmedText = editText.trim();
     if (trimmedText && trimmedText !== todo.title && onEdit) {
+      // Success haptic for save
+      if (Platform.OS === 'ios') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
       onEdit(todo.id, trimmedText);
     }
     setIsEditing(false);
@@ -104,74 +102,30 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   };
 
   const handleDuplicate = () => {
-    console.log('Duplicate clicked for todo:', todo.id);
-    console.log('onDuplicate function:', onDuplicate);
+    // Light haptic for duplicate
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     if (onDuplicate) {
-      console.log('Calling onDuplicate with todo:', todo);
       onDuplicate(todo);
-      console.log('onDuplicate called successfully');
-    } else {
-      console.log('ERROR: onDuplicate is not defined');
     }
-    setShowMenu(false);
+    swipeableRef.current?.close();
   };
 
-  const handleMenuPress = () => {
-    setShowMenu(!showMenu);
-  };
-
-  const handlePanGestureEvent = Animated.event(
-    [{ nativeEvent: { translationY: translateY } }],
-    { useNativeDriver: true }
-  );
-
-  const handlePanStateChange = (event: any) => {
-    if (!isDragEnabled) return;
-
-    if (event.nativeEvent.state === State.BEGAN) {
-      setIsDragging(true);
-      onDragStart?.();
-      Animated.spring(scale, {
-        toValue: 1.05,
-        useNativeDriver: true,
-      }).start();
-    } else if (event.nativeEvent.state === State.END || event.nativeEvent.state === State.CANCELLED) {
-      setIsDragging(false);
-      onDragEnd?.();
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-      ]).start();
+  // Scale animation for active drag state
+  React.useEffect(() => {
+    if (isActive && Platform.OS === 'ios') {
+      // Haptic feedback when drag starts
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-  };
+    
+    Animated.spring(scale, {
+      toValue: isActive ? 1.05 : 1,
+      useNativeDriver: true,
+    }).start();
+  }, [isActive, scale]);
 
-  // Right action for delete
-  const renderRightAction = (progress: Animated.AnimatedAddition<number>) => {
-    const translateX = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [100, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <Animated.View style={[styles.deleteAction, { transform: [{ translateX }] }]}>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={handleDelete}
-        >
-          <Text style={styles.deleteText}>Delete</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
-  // Left action for complete
+  // Left action for delete (swipe left to delete)
   const renderLeftAction = (progress: Animated.AnimatedAddition<number>) => {
     const translateX = progress.interpolate({
       inputRange: [0, 1],
@@ -179,16 +133,59 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       extrapolate: 'clamp',
     });
 
+    const scale = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.8, 1],
+      extrapolate: 'clamp',
+    });
+
     return (
-      <Animated.View style={[styles.completeAction, { transform: [{ translateX }] }]}>
-        <TouchableOpacity
-          style={styles.completeButton}
-          onPress={handleToggleComplete}
-        >
-          <Text style={styles.completeText}>
-            {isCompleted ? 'Undo' : 'Complete'}
-          </Text>
-        </TouchableOpacity>
+      <Animated.View style={[styles.deleteAction, { transform: [{ translateX }] }]}>
+        <Animated.View style={[styles.actionButton, styles.deleteButton, { transform: [{ scale }] }]}>
+          <TouchableOpacity
+            style={styles.actionTouchable}
+            onPress={handleDelete}
+          >
+            <Text style={styles.deleteText}>Delete</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
+    );
+  };
+
+  // Right actions for edit and duplicate (swipe right)
+  const renderRightActions = (progress: Animated.AnimatedAddition<number>) => {
+    const translateX = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [160, 0], // 2 buttons × 80 width
+      extrapolate: 'clamp',
+    });
+
+    const scale = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.8, 1],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <Animated.View style={[styles.rightActions, { transform: [{ translateX }] }]}>
+        <Animated.View style={[styles.actionButton, styles.editButton, { transform: [{ scale }] }]}>
+          <TouchableOpacity
+            style={styles.actionTouchable}
+            onPress={handleEdit}
+          >
+            <Text style={styles.editText}>Edit</Text>
+          </TouchableOpacity>
+        </Animated.View>
+        
+        <Animated.View style={[styles.actionButton, styles.duplicateButton, { transform: [{ scale }] }]}>
+          <TouchableOpacity
+            style={styles.actionTouchable}
+            onPress={handleDuplicate}
+          >
+            <Text style={styles.duplicateText}>Copy</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </Animated.View>
     );
   };
@@ -198,24 +195,11 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       style={[
         styles.container,
         isCompleted && styles.completedContainer,
-        isDragging && styles.draggingContainer,
-        isBeingDragged && styles.beingDraggedContainer,
-        isDragOver && styles.dragOverContainer,
+        isActive && styles.draggingContainer,
         {
-          transform: [
-            { translateY },
-            { scale },
-          ],
+          transform: [{ scale }],
         },
       ]}
-      onTouchStart={isDragEnabled ? () => {
-        setIsDragging(true);
-        onDragStart?.();
-      } : undefined}
-      onTouchEnd={isDragEnabled ? () => {
-        setIsDragging(false);
-        onDragEnd?.();
-      } : undefined}
     >
       <TouchableOpacity
         style={[styles.checkbox, isCompleted && styles.checkboxCompleted]}
@@ -256,83 +240,33 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         )}
       </TouchableOpacity>
 
-      {/* Drag Handle or Menu Button */}
-      {isDragEnabled ? (
+      {/* Reorder Handle */}
+      {drag && (
         <TouchableOpacity 
-          style={styles.dragHandle}
-          onLongPress={() => {
-            // Handle drag with long press
-            onDragStart?.();
-          }}
-        >
-          <Text style={styles.dragIcon}>⋮⋮</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity 
-          ref={menuButtonRef}
-          style={styles.menuButton} 
-          onPress={() => {
-            if (menuButtonRef.current) {
-              menuButtonRef.current.measure((x, y, width, height, pageX, pageY) => {
-                setMenuPosition({ 
-                  x: pageX + width, 
-                  y: pageY + height 
-                });
-                setShowMenu(!showMenu);
-              });
-            } else {
-              // Fallback if measure doesn't work
-              setShowMenu(!showMenu);
-            }
-          }}
+          style={styles.reorderHandle}
+          onLongPress={drag}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.menuIcon}>⋯</Text>
+          <View style={styles.reorderIcon}>
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+          </View>
         </TouchableOpacity>
       )}
-
     </Animated.View>
   );
 
-  // Just use Modal - it renders outside the component tree
   return (
-    <View>
+    <Swipeable
+      ref={swipeableRef}
+      renderLeftActions={renderLeftAction}
+      renderRightActions={renderRightActions}
+      leftThreshold={30}
+      rightThreshold={30}
+    >
       {todoContent}
-      
-      {/* Modal renders at app root level - won't be clipped */}
-      <Modal
-        visible={showMenu}
-        transparent={true}
-        animationType="none"
-        onRequestClose={() => setShowMenu(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalBackdrop}
-          activeOpacity={1}
-          onPress={() => setShowMenu(false)}
-        >
-          <View style={styles.modalContent}>
-            <View style={[styles.contextMenu, {
-              position: 'absolute',
-              top: menuPosition.y,
-              left: Math.max(10, menuPosition.x - 120), // Keep menu on screen
-            }]}>
-              <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
-                <Text style={styles.menuText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menuItem} onPress={handleDuplicate}>
-                <Text style={styles.menuText}>Duplicate</Text>
-              </TouchableOpacity>
-              {onDelete && (
-                <TouchableOpacity style={styles.menuItem} onPress={handleDelete}>
-                  <Text style={[styles.menuText, styles.deleteText]}>Delete</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </View>
+    </Swipeable>
   );
 
 
@@ -342,7 +276,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.transparent,
+    backgroundColor: theme.colors.background.primary,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -361,20 +295,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background.elevated,
     borderRadius: theme.borderRadius.md,
     marginHorizontal: theme.spacing.xs,
-  },
-  beingDraggedContainer: {
-    opacity: 0.7,
-    transform: [{ scale: 1.02 }],
-    shadowColor: theme.colors.jade.main,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  dragOverContainer: {
-    borderTopWidth: 3,
-    borderTopColor: theme.colors.jade.main,
-    backgroundColor: theme.colors.jade.light + '20', // 20% opacity
   },
   checkbox: {
     width: 22,
@@ -413,38 +333,54 @@ const styles = StyleSheet.create({
   // Swipe action styles
   deleteAction: {
     flex: 1,
-    backgroundColor: theme.colors.error,
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingRight: theme.spacing.lg,
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+  },
+  rightActions: {
+    flexDirection: 'row',
+    width: 160, // 2 buttons × 80 width
+  },
+  actionButton: {
+    width: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: theme.borderRadius.sm,
+    marginHorizontal: 2,
+  },
+  actionTouchable: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  actionIcon: {
+    fontSize: 20,
+    marginBottom: 4,
   },
   deleteButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    height: '100%',
+    backgroundColor: '#dc2626', // Red-600
   },
   deleteText: {
-    color: theme.colors.text.inverse,
-    fontSize: theme.typography.sizes.base,
+    color: '#ffffff',
+    fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
   },
-  completeAction: {
-    flex: 1,
+  editButton: {
     backgroundColor: theme.colors.jade.main,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: theme.spacing.lg,
   },
-  completeButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 80,
-    height: '100%',
+  editText: {
+    color: '#ffffff',
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.semibold,
   },
-  completeText: {
-    color: theme.colors.text.inverse,
-    fontSize: theme.typography.sizes.base,
+  duplicateButton: {
+    backgroundColor: theme.colors.jade.dark,
+  },
+  duplicateText: {
+    color: '#ffffff',
+    fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
   },
   // Edit functionality styles
@@ -462,65 +398,26 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background.primary,
     minHeight: 36,
   },
-  // Modal menu styles
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-  },
-  modalContent: {
-    flex: 1,
-    position: 'relative',
-  },
-  contextMenu: {
-    backgroundColor: theme.colors.background.elevated,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 10,
-    minWidth: 140,
-    paddingVertical: theme.spacing.xs,
-  },
-  menuItem: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.border.light,
-  },
-  menuText: {
-    fontSize: theme.typography.sizes.base,
-    color: theme.colors.text.primary,
-  },
-  deleteText: {
-    color: theme.colors.error,
-  },
-  // Menu button styles
-  menuButton: {
+
+  // Reorder handle styles
+  reorderHandle: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  menuIcon: {
-    fontSize: 20,
-    color: theme.colors.text.secondary,
-    fontWeight: theme.typography.weights.bold,
-  },
-  // Drag handle styles
-  dragHandle: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    justifyContent: 'center',
+  reorderIcon: {
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
+    width: 16,
+    height: 16,
   },
-  dragIcon: {
-    fontSize: 18,
-    color: theme.colors.jade.main,
-    lineHeight: 18,
-    letterSpacing: -2,
-    fontWeight: theme.typography.weights.bold,
+  dot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: theme.colors.jade.main,
+    marginVertical: 1,
   },
 });

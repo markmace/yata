@@ -1,31 +1,55 @@
 {
   "name": "yata-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "description": "A modern, gesture-driven todo app with drag & drop and intuitive swipe actions",
   "main": "index.ts",
+  "keywords": [
+    "todo",
+    "react-native",
+    "expo",
+    "gestures",
+    "drag-drop",
+    "mobile"
+  ],
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "clear": "expo start --clear",
+    "setup": "node scripts/setup-expo.js",
+    "setup-clean": "node scripts/setup-expo.js 1",
+    "setup-check": "node scripts/setup-expo.js 2",
+    "setup-update": "node scripts/setup-expo.js 3",
+    "setup-full": "node scripts/setup-expo.js 4",
+    "doctor": "npx expo-doctor",
+    "type-check": "tsc --noEmit",
+    "update": "npx npm-check-updates -u && npm install"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
     "expo": "~53.0.22",
     "expo-blur": "~14.1.5",
     "expo-dev-client": "~5.2.4",
+    "expo-haptics": "~14.1.4",
     "expo-linear-gradient": "~14.1.5",
     "expo-router": "~5.1.5",
     "expo-status-bar": "~2.2.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-native": "0.79.5",
     "react-native-draggable-flatlist": "^4.0.3",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-web": "^0.20.0"
+    "react-native-web": "^0.20.0",
+    "expo-constants": "~17.1.7",
+    "expo-linking": "~7.1.7",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-reanimated": "~3.17.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@types/react": "^18.3.11",
+    "@types/react": "~19.0.10",
     "typescript": "~5.8.3"
   },
   "private": true

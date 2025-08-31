@@ -1,136 +1,79 @@
-# YATA - Yet Another Todo App
+# YATA
 
-A modern, gesture-driven todo app with a daily-focused calendar view. Built for quick task management with intuitive interactions and powerful editing features.
+A todo app that believes today deserves your full attention.
 
-## 🚀 Quick Start
+Built around the simple idea that productivity tools should fade into the background, not demand center stage. YATA organizes tasks by days, focuses on the present moment, and lets you move fluidly between what matters now and what might matter tomorrow.
 
-1. **Install dependencies:**
-   ```bash
-   cd yata
-   npm install
-   ```
+## Getting Started
 
-2. **Run the app:**
-   ```bash
-   npm run start
-   ```
+### First Time Setup
+```bash
+npm run setup
+```
+This automatically handles dependency installation and environment configuration.
 
-3. **Test it:**
-   - **Web (easiest):** Press `w` 
-   - **Phone:** Scan QR code with Expo Go app
-   - **Simulator:** Press `i` (iOS) or `a` (Android)
+### Having Issues? (Metro errors, dependency conflicts)
+```bash
+npm run setup-full
+```
+This completely resets your environment with compatible versions.
 
-## ✨ Features
+### Daily Development
+```bash
+npm start
+```
+Then press `w` for web, `i` for iOS simulator, or `a` for Android.
 
-### 📅 **Daily Organization**
-- **Infinite calendar** - Scroll through days to plan ahead
-- **Daily cards** - Each day gets its own organized section
-- **Quick add** - Tap the `+` button to add todos to any day
-- **Auto-organize** - Completed todos automatically collapse
+### Troubleshooting Commands
+- `npm run setup-check` - Quick environment health check
+- `npm run doctor` - Run Expo environment diagnostics  
+- `npm run type-check` - Check for TypeScript errors
 
-### 🎯 **Todo Management**
-- **Three-dot menu** - Access edit, duplicate, and delete options
-- **Inline editing** - Tap "Edit" to modify todo titles instantly
-- **Smart duplication** - Copy todos to the same or different days
-- **Swipe actions** - Left to complete, right to delete (classic gesture support)
+## How It Works
 
-### 🖱️ **Interaction Methods**
-- **Touch-friendly** - Optimized for mobile with proper hit targets
-- **Gesture support** - Swipe and tap interactions throughout
-- **Drag mode** - Long-press day headers to enable visual drag feedback
-- **Keyboard shortcuts** - Enter to save, Esc to cancel when editing
+YATA shows you an infinite list of days, starting with today. Each day has its own section where you can add todos. 
 
-### 💾 **Data & Sync**
-- **Offline-first** - Works without internet using AsyncStorage
-- **Soft delete** - Deleted items can be recovered
-- **Optimistic updates** - Instant UI feedback for all actions
-- **Auto-save** - Changes persist automatically
+The core philosophy: tasks are fluid, not fixed. A task assigned to Tuesday that isn't finished doesn't become a failure—it becomes a choice. Move it to Wednesday, carry it to next week, or let it go entirely.
 
-## 🎮 How to Use
+### Basic Usage
 
-### Basic Actions
-1. **Add a todo** - Tap the green `+` button on any day
-2. **Complete a todo** - Tap the checkbox or swipe left
-3. **Access menu** - Tap the three-dot `⋯` button on any todo
-4. **Edit inline** - Select "Edit" from the menu, modify text, press Enter
-5. **Duplicate** - Select "Duplicate" to copy a todo
-6. **Delete** - Select "Delete" or swipe right for quick removal
+- Tap the "+" button on any day to add a todo
+- Tap the checkbox to mark todos complete
+- Swipe left to delete a todo
+- Swipe right to edit or copy a todo
 
-### Advanced Features
-- **Drag mode** - Long-press any day header to enable visual drag feedback
-- **Quick complete** - Swipe left on any todo for instant completion
-- **Batch organize** - Completed todos automatically group under each day
-- **Future planning** - Scroll down to add todos to upcoming days
+### Design Philosophy
 
-## 🛠️ Tech Stack
+YATA is built for people who ask "What matters right now?" rather than "What might matter someday?"
 
-### Core Technologies
-- **React Native + Expo** - Cross-platform mobile framework
-- **TypeScript** - Type-safe JavaScript for better development
-- **React Native Gesture Handler** - Smooth swipe and drag interactions
-- **Expo Linear Gradient** - Beautiful gradient backgrounds
-- **Expo Blur** - iOS-style blur effects (iOS/Android)
+- Focus on today first, but allow planning for the future
+- Don't overcomplicate individual tasks
+- If you don't complete something today, it's okay - just move it to another day
+- Keep the interface clean and distraction-free
 
-### Data & Storage
-- **AsyncStorage** - Offline-first local data persistence
-- **Custom TodoStore** - Optimized data layer with caching and debouncing
-- **Soft delete** - Non-destructive data management
-
-### UI/UX Features
-- **Modal-based menus** - Context menus that work across platforms
-- **Animated transitions** - Smooth interactions with React Native Animated
-- **Platform adaptation** - Web-compatible fallbacks where needed
-- **Theme system** - Consistent design tokens throughout
-
-## 📁 Project Structure
+## Architecture
 
 ```
-yata/
-├── components/           # Reusable UI components
-│   ├── TodoItem.tsx     # Individual todo with menu and interactions
-│   ├── DaySection.tsx   # Daily todo container with add functionality
-│   ├── TodoInput.tsx    # Input component for adding todos
-│   └── TodoSection.tsx  # Section wrapper component
-├── screens/             # Main application screens
-│   └── MainScreen.tsx   # Primary app interface with infinite scroll
-├── services/            # Business logic and data management
-│   └── storage.ts       # TodoStore class with AsyncStorage integration
-├── styles/              # Design system and theming
-│   └── theme.ts         # Colors, typography, spacing, and design tokens
-├── types/               # TypeScript type definitions
-│   └── todo.ts          # Todo interface and related types
-├── utils/               # Helper functions and utilities
-│   └── dateUtils.ts     # Date formatting and manipulation
-└── docs/                # Documentation and project planning
-    ├── manifesto        # Project philosophy and goals
-    └── project_plan.md  # Development roadmap and specifications
+components/     # UI components like TodoItem, DaySection
+screens/        # Main app screens
+services/       # Data storage and business logic
+types/          # TypeScript definitions
+utils/          # Helper functions
+styles/         # Theme and design system
 ```
 
-## 🎨 Design Philosophy
+The app uses AsyncStorage for local data persistence, React Native Gesture Handler for swipe interactions, and follows a clean component architecture.
 
-YATA follows a **minimal, gesture-first** approach:
+## Tech Stack
 
-- **Reduce cognitive load** - Clear visual hierarchy with generous spacing
-- **Gesture-driven** - Swipe, tap, and drag interactions feel natural
-- **Daily focus** - Organize by day rather than overwhelming project lists  
-- **Progressive disclosure** - Advanced features available but not cluttering
-- **Cross-platform** - Works seamlessly on iOS, Android, and web
+- React Native with Expo
+- TypeScript
+- AsyncStorage for data
+- React Native Gesture Handler for swipes
+- Expo Linear Gradient and Blur for UI effects
 
-## 🚧 Development
+## Development
 
-### Adding Features
-1. **Components** - Build reusable UI in `/components`
-2. **Types** - Define interfaces in `/types` first
-3. **Storage** - Extend TodoStore for data operations
-4. **Theme** - Use design tokens from `/styles/theme.ts`
+To add new features, start by defining types in `/types`, implement the logic in `/services`, and build UI components in `/components`. The theme system in `/styles/theme.ts` provides consistent colors and spacing.
 
-### Key Patterns
-- **Optimistic updates** - Update UI immediately, sync data after
-- **Error boundaries** - Graceful fallbacks for failed operations
-- **Platform checks** - Conditional features for web vs. native
-- **Gesture handlers** - Use react-native-gesture-handler for interactions
-
----
-
-**🎯 Built for productivity, designed for delight** 📱✨
-
+The app uses optimistic updates - the UI responds immediately while data syncs in the background. This keeps interactions feeling fast and responsive.

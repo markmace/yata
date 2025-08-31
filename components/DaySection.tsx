@@ -8,6 +8,8 @@ import {
   TextInput,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import * as Haptics from 'expo-haptics';
 import { Todo } from '../types/todo';
 import { TodoItem } from './TodoItem';
 import { formatDayHeader } from '../utils/dateUtils';
@@ -38,9 +40,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
-  const [dragMode, setDragMode] = useState(false);
-  const [draggingItem, setDraggingItem] = useState<string | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  // Drag and drop is always enabled
 
   const handleAddTodo = () => {
     const trimmedValue = inputValue.trim();
@@ -60,37 +60,28 @@ export const DaySection: React.FC<DaySectionProps> = ({
     setShowInput(false);
   };
 
-  const handleDragStart = (todoId: string) => {
-    setDraggingItem(todoId);
-  };
-
-  const handleDragEnd = () => {
-    setDraggingItem(null);
-    setDragOverIndex(null);
-  };
-
-  const handleDragOver = (index: number) => {
-    setDragOverIndex(index);
-  };
-
-  const handleDrop = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex || !onReorderTodos) return;
-    
-    const reorderedTodos = [...activeTodos];
-    const [draggedTodo] = reorderedTodos.splice(fromIndex, 1);
-    reorderedTodos.splice(toIndex, 0, draggedTodo);
+  const handleReorderTodos = (data: Todo[]) => {
+    if (!onReorderTodos) return;
     
     // Combine with completed todos
-    const allTodos = [...reorderedTodos, ...completedTodos];
+    const allTodos = [...data, ...completedTodos];
     onReorderTodos(allTodos);
-    
-    setDraggingItem(null);
-    setDragOverIndex(null);
   };
 
-  const handleLongPress = () => {
-    setDragMode(!dragMode);
-  };
+  // Remove drag mode toggle - not needed anymore
+
+  const renderTodoItem = ({ item: todo, drag, isActive }: RenderItemParams<Todo>) => (
+    <TodoItem
+      todo={todo}
+      onToggleComplete={onToggleComplete}
+      onDelete={onDelete}
+      onEdit={onEdit}
+      onDuplicate={onDuplicate}
+      onPress={onTodoPress}
+      drag={drag}
+      isActive={isActive}
+    />
+  );
 
   const activeTodos = todos.filter(todo => !todo.completedAt);
   const completedTodos = todos.filter(todo => !!todo.completedAt);
@@ -103,10 +94,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
       <View style={styles.innerContainer}>
         {/* Day Header */}
         <View style={styles.header}>
-          <TouchableOpacity onLongPress={handleLongPress}>
-            <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
-            {dragMode && <Text style={styles.dragModeText}>Drag mode active</Text>}
-          </TouchableOpacity>
+          <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
           <View style={styles.headerRight}>
             {activeTodos.length > 0 && (
               <View style={styles.countBadge}>
@@ -141,31 +129,22 @@ export const DaySection: React.FC<DaySectionProps> = ({
         )}
 
         {/* Active Todos */}
-        {activeTodos.map((todo, index) => (
-          <TodoItem
-            key={todo.id}
-            todo={todo}
-            index={index}
-            onToggleComplete={onToggleComplete}
-            onDelete={onDelete}
-            onEdit={onEdit}
-            onDuplicate={onDuplicate}
-            onPress={onTodoPress}
-            isDragEnabled={dragMode}
-            isBeingDragged={draggingItem === todo.id}
-            isDragOver={dragOverIndex === index}
-            onDragStart={() => handleDragStart(todo.id)}
-            onDragEnd={handleDragEnd}
-            onDragOver={() => handleDragOver(index)}
-            onDrop={(fromIndex: number) => handleDrop(fromIndex, index)}
+        {activeTodos.length > 0 && (
+          <DraggableFlatList
+            data={activeTodos}
+            renderItem={renderTodoItem}
+            keyExtractor={(item) => item.id}
+            onDragEnd={({ data }) => handleReorderTodos(data)}
+            autoscrollThreshold={50}
+            activationDistance={20} // Small activation distance for easy dragging
           />
-        ))}
+        )}
 
         {/* Completed Todos (collapsed) */}
         {completedTodos.length > 0 && (
           <View style={styles.completedSection}>
             <Text style={styles.completedHeader}>
-              ✓ {completedTodos.length} completed
+              {completedTodos.length} completed
             </Text>
             {completedTodos.map((todo) => (
               <TodoItem
@@ -222,12 +201,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
     letterSpacing: -0.3,
   },
-  dragModeText: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.medium,
-    color: theme.colors.jade.main,
-    marginTop: 2,
-  },
+
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',

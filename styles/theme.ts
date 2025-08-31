@@ -2,11 +2,11 @@
 // Japanese/Scandinavian inspired with light and dark themes
 
 const baseColors = {
-  // Muted sage/concrete accent color - Japanese/Scandinavian inspired
+  // Japanese slate - sophisticated warm grays
   jade: {
-    light: '#a1a1aa',  // Light concrete gray
-    main: '#71717a',   // Muted sage concrete
-    dark: '#52525b',   // Deep concrete
+    light: '#a1a1aa',  // Light slate
+    main: '#71717a',   // Japanese slate
+    dark: '#52525b',   // Deep slate
   },
   
   // System colors
@@ -24,38 +24,38 @@ const lightTheme = {
   colors: {
     ...baseColors,
     
-    // Backgrounds
+    // Backgrounds - warm slate tones
     background: {
       primary: '#ffffff',
-      secondary: '#f8fafc',
-      tertiary: '#f1f5f9',
+      secondary: '#fafaf9',
+      tertiary: '#f5f5f4',
       elevated: '#ffffff',
     },
     
-    // Text
+    // Text - warm slate grays
     text: {
-      primary: '#0f172a',
-      secondary: '#475569',
-      tertiary: '#94a3b8',
-      disabled: '#cbd5e1',
+      primary: '#292524',
+      secondary: '#57534e',
+      tertiary: '#a8a29e',
+      disabled: '#d6d3d1',
       inverse: '#ffffff',
     },
     
-    // Borders
+    // Borders - warm stone grays
     border: {
-      light: '#f1f5f9',
-      default: '#e2e8f0',
-      strong: '#cbd5e1',
+      light: '#f5f5f4',
+      default: '#e7e5e4',
+      strong: '#d6d3d1',
     },
     
-    // Todo specific
+    // Todo specific - warm stone tones
     todo: {
       background: '#ffffff',
-      hover: '#f8fafc',
-      completed: '#f0fdf5',
+      hover: '#fafaf9',
+      completed: '#f5f5f4',  // Warm stone tint
       priority: {
-        low: '#eff6ff',
-        medium: '#fffbeb',
+        low: '#fafaf9',    // Light stone
+        medium: '#f5f5f4',  // Stone
         high: '#fef2f2',
       },
     },
@@ -69,38 +69,38 @@ const darkTheme = {
   colors: {
     ...baseColors,
     
-    // Backgrounds
+    // Backgrounds - warm slate, not blue
     background: {
-      primary: '#0f172a',
-      secondary: '#1e293b',
-      tertiary: '#334155',
-      elevated: '#1e293b',
+      primary: '#18181b',   // Dark zinc
+      secondary: '#27272a', // Zinc-800
+      tertiary: '#3f3f46',  // Zinc-700
+      elevated: '#27272a',
     },
     
-    // Text
+    // Text - warm grays
     text: {
-      primary: '#f1f5f9',
-      secondary: '#cbd5e1',
-      tertiary: '#94a3b8',
-      disabled: '#475569',
-      inverse: '#0f172a',
+      primary: '#fafafa',   // Zinc-50
+      secondary: '#d4d4d8', // Zinc-300
+      tertiary: '#a1a1aa',  // Zinc-400
+      disabled: '#71717a',  // Zinc-500
+      inverse: '#18181b',
     },
     
-    // Borders
+    // Borders - warm slate
     border: {
-      light: '#1e293b',
-      default: '#334155',
-      strong: '#475569',
+      light: '#27272a',     // Zinc-800
+      default: '#3f3f46',   // Zinc-700
+      strong: '#52525b',    // Zinc-600
     },
     
-    // Todo specific
+    // Todo specific - slate tones
     todo: {
-      background: '#1e293b',
-      hover: '#334155',
-      completed: '#134032',
+      background: '#27272a',
+      hover: '#3f3f46',
+      completed: '#27272a',
       priority: {
-        low: '#172554',
-        medium: '#422006',
+        low: '#27272a',
+        medium: '#3f3f46',
         high: '#450a0a',
       },
     },
@@ -114,10 +114,11 @@ const commonTheme = {
   spacing: {
     xs: 4,
     sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 48,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    xxl: 32,
+    xxxl: 48,
   },
   
   borderRadius: {
@@ -141,26 +142,27 @@ const commonTheme = {
       shadowRadius: 0,
       elevation: 0,
     },
+    // Soft, diffused shadows like "light filtering through concrete"
     sm: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 3,
-      elevation: 2,
+      shadowColor: '#78716c',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.03,
+      shadowRadius: 6,
+      elevation: 1,
     },
     md: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 4,
+      shadowColor: '#78716c',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 12,
+      elevation: 2,
     },
     lg: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
-      shadowRadius: 12,
-      elevation: 8,
+      shadowColor: '#78716c',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.08,
+      shadowRadius: 20,
+      elevation: 4,
     },
   },
   
@@ -235,8 +237,8 @@ export const themes = {
   },
 };
 
-// Default to light theme
-export const theme = themes.light;
+// Default to dark theme
+export const theme = themes.dark;
 
 // Type exports
 export type Theme = typeof themes.light;

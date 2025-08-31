@@ -268,3 +268,9 @@ The developer is learning this stack. When suggesting code:
 ```
 
 This rules file will help Cursor understand that you want real, working code with good explanations, not quick mocks or band-aid fixes. It emphasizes your Python background and need for comments while pushing for actual implementations over placeholders.
+
+General rules:
+- We do not need a new document for every new feature -- including a new script and a new readme is overkill. 
+- For documentation, please reduce the mount of referential/historical mentions, assume this code is fast moving
+- Re-use scripts when we are improving functionality over creating a new version. Never title things like '_improved', etc.
+- In documentation, please dont use emojis. Be concise!

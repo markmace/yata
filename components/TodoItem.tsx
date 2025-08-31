@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Todo } from '../types/todo';
+import { theme } from '../styles/theme';
 
 interface TodoItemProps {
   todo: Todo;
@@ -125,53 +126,57 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: Platform.OS === 'ios' ? 16 : 12,
+    backgroundColor: theme.colors.transparent,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e1e1e1',
+    borderBottomColor: theme.colors.border.light,
     minHeight: 60,
   },
   completedContainer: {
-    opacity: 0.6,
+    opacity: theme.opacity.muted,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: theme.colors.jade.main,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: theme.spacing.lg,
+    backgroundColor: theme.colors.transparent,
   },
   checkboxCompleted: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: theme.colors.jade.main,
+    borderColor: theme.colors.jade.main,
   },
   checkmark: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.bold,
   },
   contentContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 16,
-    color: '#000000',
-    lineHeight: 22,
+    fontSize: theme.typography.sizes.base,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.lineHeight.normal * theme.typography.sizes.base,
+    letterSpacing: -0.1,
+    fontWeight: theme.typography.weights.normal,
   },
   completedTitle: {
     textDecorationLine: 'line-through',
-    color: '#888888',
+    color: theme.colors.text.tertiary,
   },
   // Swipe action styles
   deleteAction: {
     flex: 1,
-    backgroundColor: '#FF3B30',
+    backgroundColor: theme.colors.error,
     justifyContent: 'center',
     alignItems: 'flex-end',
-    paddingRight: 20,
+    paddingRight: theme.spacing.lg,
   },
   deleteButton: {
     justifyContent: 'center',
@@ -180,16 +185,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   deleteText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
   },
   completeAction: {
     flex: 1,
-    backgroundColor: '#34C759',
+    backgroundColor: theme.colors.jade.main,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    paddingLeft: 20,
+    paddingLeft: theme.spacing.lg,
   },
   completeButton: {
     justifyContent: 'center',
@@ -198,8 +203,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   completeText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
   },
 });

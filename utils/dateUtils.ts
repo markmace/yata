@@ -85,8 +85,20 @@ export const generateDaySequence = (startDate: Date, numberOfDays: number): Date
 export const formatDayHeader = (date: Date): string => {
   const now = new Date();
   
-  if (isToday(date)) return 'Today';
-  if (isTomorrow(date)) return 'Tomorrow';
+  if (isToday(date)) {
+    return `Today • ${date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    })}`;
+  }
+  
+  if (isTomorrow(date)) {
+    return `Tomorrow • ${date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    })}`;
+  }
+  
   if (isOverdue(date)) return 'Yesterday'; // In case we show past days
   
   // For this week, show day name with date

@@ -8,9 +8,11 @@ import {
   useColorScheme,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Todo } from '../types/todo';
 import { todoStore } from '../services/storage';
 import { DaySection } from '../components/DaySection';
+import { theme } from '../styles/theme';
 import {
   getStartOfToday,
   generateDaySequence,
@@ -149,8 +151,11 @@ export const MainScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <LinearGradient
+      colors={[theme.colors.background.secondary, theme.colors.background.tertiary]}
+      style={styles.container}
+    >
+      <StatusBar style="dark" />
       
       <FlatList
         data={days}
@@ -160,23 +165,24 @@ export const MainScreen: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#007AFF"
+            tintColor={theme.colors.jade.main}
+            progressBackgroundColor={theme.colors.background.elevated}
           />
         }
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xxl * 2,
+    paddingTop: theme.spacing.xl,
   },
 });

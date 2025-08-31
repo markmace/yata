@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   TextInput,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { Todo } from '../types/todo';
 import { TodoItem } from './TodoItem';
 import { formatDayHeader } from '../utils/dateUtils';
+import { theme } from '../styles/theme';
 
 interface DaySectionProps {
   date: Date;
@@ -53,175 +55,184 @@ export const DaySection: React.FC<DaySectionProps> = ({
   const completedTodos = todos.filter(todo => !!todo.completedAt);
 
   return (
-    <View style={styles.container}>
-      {/* Day Header */}
-      <View style={styles.header}>
-        <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
-        <View style={styles.headerRight}>
-          {activeTodos.length > 0 && (
-            <Text style={styles.todoCount}>{activeTodos.length}</Text>
-          )}
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAddPress}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={styles.addButtonText}>+</Text>
-          </TouchableOpacity>
+    <BlurView intensity={20} style={styles.container}>
+      <View style={styles.innerContainer}>
+        {/* Day Header */}
+        <View style={styles.header}>
+          <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
+          <View style={styles.headerRight}>
+            {activeTodos.length > 0 && (
+              <View style={styles.countBadge}>
+                <Text style={styles.todoCount}>{activeTodos.length}</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleAddPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.addButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
-      {/* Quick Add Input */}
-      {showInput && (
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={inputValue}
-            onChangeText={setInputValue}
-            placeholder="What needs to be done?"
-            placeholderTextColor="#999999"
-            autoFocus
-            returnKeyType="done"
-            onSubmitEditing={handleAddTodo}
-            onBlur={handleCancel}
-          />
-        </View>
-      )}
-
-      {/* Active Todos */}
-      {activeTodos.map((todo) => (
-        <TodoItem
-          key={todo.id}
-          todo={todo}
-          onToggleComplete={onToggleComplete}
-          onDelete={onDelete}
-          onPress={onTodoPress}
-        />
-      ))}
-
-      {/* Completed Todos (collapsed) */}
-      {completedTodos.length > 0 && (
-        <View style={styles.completedSection}>
-          <Text style={styles.completedHeader}>
-            ✓ {completedTodos.length} completed
-          </Text>
-          {completedTodos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onToggleComplete={onToggleComplete}
-              onDelete={onDelete}
-              onPress={onTodoPress}
+        {/* Quick Add Input */}
+        {showInput && (
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={inputValue}
+              onChangeText={setInputValue}
+              placeholder="What needs to be done?"
+              placeholderTextColor={theme.colors.text.tertiary}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleAddTodo}
+              onBlur={handleCancel}
             />
-          ))}
-        </View>
-      )}
+          </View>
+        )}
 
-      {/* Empty state for days with no todos */}
-      {todos.length === 0 && !showInput && (
-        <View style={styles.emptyDay}>
-          <Text style={styles.emptyText}>No todos yet</Text>
-        </View>
-      )}
-    </View>
+        {/* Active Todos */}
+        {activeTodos.map((todo) => (
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            onToggleComplete={onToggleComplete}
+            onDelete={onDelete}
+            onPress={onTodoPress}
+          />
+        ))}
+
+        {/* Completed Todos (collapsed) */}
+        {completedTodos.length > 0 && (
+          <View style={styles.completedSection}>
+            <Text style={styles.completedHeader}>
+              ✓ {completedTodos.length} completed
+            </Text>
+            {completedTodos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                onToggleComplete={onToggleComplete}
+                onDelete={onDelete}
+                onPress={onTodoPress}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Empty state for days with no todos */}
+        {todos.length === 0 && !showInput && (
+          <View style={styles.emptyDay}>
+            <Text style={styles.emptyText}>No todos yet</Text>
+          </View>
+        )}
+      </View>
+    </BlurView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
-    marginBottom: 8,
-    borderRadius: 12,
+    backgroundColor: theme.colors.background.elevated,
+    marginBottom: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    ...theme.shadows.sm,
+  },
+  innerContainer: {
+    backgroundColor: theme.colors.todo.background,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: theme.borderWidth.thin,
+    borderColor: theme.colors.border.light,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e1e1e1',
+    borderBottomColor: theme.colors.border.default,
+    backgroundColor: theme.colors.background.secondary,
   },
   dayTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    letterSpacing: -0.3,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  countBadge: {
+    backgroundColor: theme.colors.jade.main,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.full,
+    marginRight: theme.spacing.md,
+    minWidth: 28,
+    alignItems: 'center',
+  },
   todoCount: {
-    backgroundColor: '#007AFF',
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginRight: 8,
-    minWidth: 20,
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
     textAlign: 'center',
   },
   addButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#007AFF',
+    width: 36,
+    height: 36,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.jade.main,
     alignItems: 'center',
     justifyContent: 'center',
+    ...theme.shadows.sm,
   },
   addButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 20,
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.normal,
+    lineHeight: 22,
   },
   inputContainer: {
-    padding: 16,
+    padding: theme.spacing.lg,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e1e1e1',
-    backgroundColor: '#f8f9fa',
+    borderBottomColor: theme.colors.border.default,
+    backgroundColor: theme.colors.background.secondary,
   },
   input: {
-    fontSize: 16,
-    color: '#000000',
-    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: '#e1e1e1',
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
+    fontSize: theme.typography.sizes.base,
+    color: theme.colors.text.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderWidth: theme.borderWidth.thin,
+    borderColor: theme.colors.border.strong,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.background.primary,
+    minHeight: 44,
   },
   completedSection: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e1e1e1',
-    backgroundColor: '#f8f9fa',
+    borderTopColor: theme.colors.border.default,
+    backgroundColor: theme.colors.todo.completed,
   },
   completedHeader: {
-    fontSize: 14,
-    color: '#666666',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#f0f0f0',
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    fontWeight: theme.typography.weights.medium,
   },
   emptyDay: {
-    paddingVertical: 20,
+    paddingVertical: theme.spacing.lg,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
-    color: '#999999',
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.tertiary,
     fontStyle: 'italic',
   },
 });

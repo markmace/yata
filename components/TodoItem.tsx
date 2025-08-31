@@ -230,36 +230,58 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         <Text style={styles.dragIcon}>⋮⋮</Text>
       </TouchableOpacity>
 
-      {/* Drag Handle (visible when drag is enabled) */}
-      {isDragEnabled && (
-        <View style={styles.dragHandle}>
-          <Text style={styles.dragIcon}>⋮⋮</Text>
-        </View>
-      )}
     </Animated.View>
   );
 
-  if (Platform.OS === 'web') {
-    // Simplified version for web without gesture handlers
-    return todoContent;
-  }
-
   return (
-    <PanGestureHandler
-      enabled={isDragEnabled}
-      onGestureEvent={handlePanGestureEvent}
-      onHandlerStateChange={handlePanStateChange}
-    >
-      <Swipeable
-        ref={swipeableRef}
-        renderLeftActions={renderLeftAction}
-        renderRightActions={onDelete ? renderRightAction : undefined}
-        enabled={!isDragging}
-      >
-        {todoContent}
-      </Swipeable>
-    </PanGestureHandler>
+    <View style={{ position: 'relative' }}>
+      {Platform.OS === 'web' ? (
+        // Simplified version for web without gesture handlers
+        todoContent
+      ) : (
+        <PanGestureHandler
+          enabled={isDragEnabled}
+          onGestureEvent={handlePanGestureEvent}
+          onHandlerStateChange={handlePanStateChange}
+        >
+          <Swipeable
+            ref={swipeableRef}
+            renderLeftActions={renderLeftAction}
+            renderRightActions={onDelete ? renderRightAction : undefined}
+            enabled={!isDragging}
+          >
+            {todoContent}
+          </Swipeable>
+        </PanGestureHandler>
+      )}
+      
+      {/* Floating Context Menu */}
+      {showMenu && (
+        <>
+          <TouchableOpacity 
+            style={styles.menuBackdrop} 
+            onPress={() => setShowMenu(false)}
+            activeOpacity={1}
+          />
+          <View style={styles.floatingMenu}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
+              <Text style={styles.menuText}>✏️ Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleDuplicate}>
+              <Text style={styles.menuText}>📋 Duplicate</Text>
+            </TouchableOpacity>
+            {onDelete && (
+              <TouchableOpacity style={[styles.menuItem, styles.deleteMenuItem]} onPress={handleDelete}>
+                <Text style={[styles.menuText, styles.deleteMenuText]}>🗑️ Delete</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </>
+      )}
+    </View>
   );
+
+
 };
 
 const styles = StyleSheet.create({
@@ -372,44 +394,35 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background.primary,
     minHeight: 36,
   },
-  // Hamburger menu styles
-  menuContainer: {
-    position: 'relative',
-  },
-  hamburgerButton: {
-    padding: theme.spacing.sm,
-    marginLeft: theme.spacing.xs,
-  },
-  hamburgerIcon: {
-    width: 16,
-    height: 12,
-    justifyContent: 'space-between',
-  },
-  hamburgerLine: {
-    width: 16,
-    height: 2,
-    backgroundColor: theme.colors.text.secondary,
-    borderRadius: 1,
-  },
-  dropdown: {
+  // Floating context menu styles
+  menuBackdrop: {
     position: 'absolute',
-    top: '100%',
+    top: -1000,
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+    zIndex: 9998,
+  },
+  floatingMenu: {
+    position: 'absolute',
+    top: 0,
     right: 0,
     backgroundColor: theme.colors.background.elevated,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border.light,
-    shadowColor: theme.colors.text.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-    zIndex: 1000,
-    minWidth: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 9999,
+    minWidth: 140,
+    paddingVertical: theme.spacing.xs,
   },
   menuItem: {
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: theme.spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.border.light,
   },
@@ -417,7 +430,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   menuText: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.sizes.base,
     color: theme.colors.text.primary,
     fontWeight: theme.typography.weights.medium,
   },
@@ -426,15 +439,15 @@ const styles = StyleSheet.create({
   },
   // Drag handle styles
   dragHandle: {
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
   dragIcon: {
-    fontSize: 16,
-    color: theme.colors.text.tertiary,
-    lineHeight: 16,
+    fontSize: 18,
+    color: theme.colors.text.secondary,
+    lineHeight: 18,
     letterSpacing: -2,
   },
 });

@@ -19,10 +19,21 @@ npm run setup-full
 This completely resets your environment with compatible versions.
 
 ### Daily Development
+
+#### iOS Development (a lot of work)
+```bash
+# Build and run on iOS simulator (first time or after major changes)
+npx expo run:ios --device "iPhone 16 Pro"  # Replace with your preferred simulator
+
+# For subsequent runs (faster startup)
+npx expo start --ios
+```
+
+#### Other Platforms
 ```bash
 npm start
 ```
-Then press `w` for web, `i` for iOS simulator, or `a` for Android.
+Then press `w` for web or `a` for Android.
 
 ### Troubleshooting Commands
 - `npm run setup-check` - Quick environment health check

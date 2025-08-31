@@ -21,6 +21,7 @@ interface DaySectionProps {
   onDelete: (id: string) => void;
   onEdit: (id: string, newTitle: string) => void;
   onDuplicate: (todo: Todo) => void;
+  onReorderTodos?: (todos: Todo[]) => void;
   onTodoPress?: (todo: Todo) => void;
 }
 
@@ -32,12 +33,14 @@ export const DaySection: React.FC<DaySectionProps> = ({
   onDelete,
   onEdit,
   onDuplicate,
+  onReorderTodos,
   onTodoPress,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [dragMode, setDragMode] = useState(false);
   const [draggingItem, setDraggingItem] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const handleAddTodo = () => {
     const trimmedValue = inputValue.trim();
@@ -63,6 +66,26 @@ export const DaySection: React.FC<DaySectionProps> = ({
 
   const handleDragEnd = () => {
     setDraggingItem(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (index: number) => {
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || !onReorderTodos) return;
+    
+    const reorderedTodos = [...activeTodos];
+    const [draggedTodo] = reorderedTodos.splice(fromIndex, 1);
+    reorderedTodos.splice(toIndex, 0, draggedTodo);
+    
+    // Combine with completed todos
+    const allTodos = [...reorderedTodos, ...completedTodos];
+    onReorderTodos(allTodos);
+    
+    setDraggingItem(null);
+    setDragOverIndex(null);
   };
 
   const handleLongPress = () => {
@@ -118,18 +141,23 @@ export const DaySection: React.FC<DaySectionProps> = ({
         )}
 
         {/* Active Todos */}
-        {activeTodos.map((todo) => (
+        {activeTodos.map((todo, index) => (
           <TodoItem
             key={todo.id}
             todo={todo}
+            index={index}
             onToggleComplete={onToggleComplete}
             onDelete={onDelete}
             onEdit={onEdit}
             onDuplicate={onDuplicate}
             onPress={onTodoPress}
             isDragEnabled={dragMode}
+            isBeingDragged={draggingItem === todo.id}
+            isDragOver={dragOverIndex === index}
             onDragStart={() => handleDragStart(todo.id)}
             onDragEnd={handleDragEnd}
+            onDragOver={() => handleDragOver(index)}
+            onDrop={(fromIndex: number) => handleDrop(fromIndex, index)}
           />
         ))}
 

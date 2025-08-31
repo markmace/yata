@@ -6,6 +6,7 @@ import {
   RefreshControl,
   Alert,
   useColorScheme,
+  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -97,31 +98,22 @@ export const MainScreen: React.FC = () => {
     }
   };
 
-  // Delete todo with confirmation
+  // Delete todo immediately
   const handleDelete = async (id: string) => {
-    Alert.alert(
-      'Delete Todo',
-      'Are you sure you want to delete this todo?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await todoStore.softDelete(id);
-              await loadTodos();
-            } catch (error) {
-              console.error('Failed to delete todo:', error);
-              Alert.alert('Error', 'Failed to delete todo');
-            }
-          },
-        },
-      ]
-    );
+    console.log('MainScreen handleDelete called with id:', id);
+    try {
+      await todoStore.softDelete(id);
+      console.log('softDelete completed, reloading todos');
+      await loadTodos();
+      console.log('Todos reloaded successfully');
+    } catch (error) {
+      console.error('Failed to delete todo:', error);
+      if (Platform.OS === 'web') {
+        alert('Error: Failed to delete todo');
+      } else {
+        Alert.alert('Error', 'Failed to delete todo');
+      }
+    }
   };
 
   // Edit todo
@@ -142,12 +134,33 @@ export const MainScreen: React.FC = () => {
     }
   };
 
+  // Reorder todos within a day
+  const handleReorderTodos = async (reorderedTodos: Todo[]) => {
+    try {
+      // Update all todos with new order
+      const updates = reorderedTodos.map((todo, index) => ({
+        ...todo,
+        // Add an order field or use createdAt to maintain order
+        createdAt: new Date(Date.now() + index), // Simple ordering trick
+      }));
+      
+      for (const todo of updates) {
+        await todoStore.upsert(todo);
+      }
+      
+      await loadTodos();
+    } catch (error) {
+      console.error('Failed to reorder todos:', error);
+      Alert.alert('Error', 'Failed to reorder todos');
+    }
+  };
+
   // Duplicate todo
   const handleDuplicate = async (originalTodo: Todo) => {
     try {
       const newTodo: Todo = {
         id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        title: `${originalTodo.title} (copy)`,
+        title: originalTodo.title,
         notes: originalTodo.notes,
         createdAt: new Date(),
         scheduledFor: originalTodo.scheduledFor,
@@ -186,6 +199,7 @@ export const MainScreen: React.FC = () => {
         onDelete={handleDelete}
         onEdit={handleEdit}
         onDuplicate={handleDuplicate}
+        onReorderTodos={handleReorderTodos}
       />
     );
   };

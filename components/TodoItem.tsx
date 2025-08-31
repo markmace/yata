@@ -16,32 +16,46 @@ import { theme } from '../styles/theme';
 
 interface TodoItemProps {
   todo: Todo;
+  index?: number;
   onToggleComplete: (id: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (id: string, newTitle: string) => void;
   onDuplicate?: (todo: Todo) => void;
   onPress?: (todo: Todo) => void;
   isDragEnabled?: boolean;
+  isBeingDragged?: boolean;
+  isDragOver?: boolean;
   onDragStart?: () => void;
   onDragEnd?: () => void;
+  onDragOver?: () => void;
+  onDrop?: (fromIndex: number) => void;
+  onShowMenu?: (todo: Todo, menuRef: any) => void;
 }
 
 export const TodoItem: React.FC<TodoItemProps> = ({
   todo,
+  index = 0,
   onToggleComplete,
   onDelete,
   onEdit,
   onDuplicate,
   onPress,
   isDragEnabled = false,
+  isBeingDragged = false,
+  isDragOver = false,
   onDragStart,
   onDragEnd,
+  onDragOver,
+  onDrop,
+  onShowMenu,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.title);
   const [isDragging, setIsDragging] = useState(false);
   const swipeableRef = useRef<Swipeable>(null);
+  const menuButtonRef = useRef<TouchableOpacity>(null);
   const translateY = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   
@@ -58,8 +72,14 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   };
 
   const handleDelete = () => {
+    console.log('Delete clicked for todo:', todo.id);
+    console.log('onDelete function:', onDelete);
     if (onDelete) {
+      console.log('Calling onDelete with id:', todo.id);
       onDelete(todo.id);
+      console.log('onDelete called successfully');
+    } else {
+      console.log('ERROR: onDelete is not defined');
     }
     setShowMenu(false);
   };
@@ -84,18 +104,20 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   };
 
   const handleDuplicate = () => {
+    console.log('Duplicate clicked for todo:', todo.id);
+    console.log('onDuplicate function:', onDuplicate);
     if (onDuplicate) {
+      console.log('Calling onDuplicate with todo:', todo);
       onDuplicate(todo);
+      console.log('onDuplicate called successfully');
+    } else {
+      console.log('ERROR: onDuplicate is not defined');
     }
     setShowMenu(false);
   };
 
-  const handleLongPress = () => {
+  const handleMenuPress = () => {
     setShowMenu(!showMenu);
-    // Close swipeable if it's open
-    if (swipeableRef.current) {
-      swipeableRef.current.close();
-    }
   };
 
   const handlePanGestureEvent = Animated.event(
@@ -177,6 +199,8 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         styles.container,
         isCompleted && styles.completedContainer,
         isDragging && styles.draggingContainer,
+        isBeingDragged && styles.beingDraggedContainer,
+        isDragOver && styles.dragOverContainer,
         {
           transform: [
             { translateY },
@@ -184,6 +208,14 @@ export const TodoItem: React.FC<TodoItemProps> = ({
           ],
         },
       ]}
+      onTouchStart={isDragEnabled ? () => {
+        setIsDragging(true);
+        onDragStart?.();
+      } : undefined}
+      onTouchEnd={isDragEnabled ? () => {
+        setIsDragging(false);
+        onDragEnd?.();
+      } : undefined}
     >
       <TouchableOpacity
         style={[styles.checkbox, isCompleted && styles.checkboxCompleted]}
@@ -196,7 +228,6 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       <TouchableOpacity
         style={styles.contentContainer}
         onPress={handlePress}
-        onLongPress={handleLongPress}
         activeOpacity={0.7}
       >
         {isEditing ? (
@@ -225,59 +256,82 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         )}
       </TouchableOpacity>
 
-      {/* Drag Handle */}
-      <TouchableOpacity style={styles.dragHandle}>
-        <Text style={styles.dragIcon}>⋮⋮</Text>
-      </TouchableOpacity>
+      {/* Drag Handle or Menu Button */}
+      {isDragEnabled ? (
+        <TouchableOpacity 
+          style={styles.dragHandle}
+          onLongPress={() => {
+            // Handle drag with long press
+            onDragStart?.();
+          }}
+        >
+          <Text style={styles.dragIcon}>⋮⋮</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity 
+          ref={menuButtonRef}
+          style={styles.menuButton} 
+          onPress={() => {
+            if (menuButtonRef.current) {
+              menuButtonRef.current.measure((x, y, width, height, pageX, pageY) => {
+                setMenuPosition({ 
+                  x: pageX + width, 
+                  y: pageY + height 
+                });
+                setShowMenu(!showMenu);
+              });
+            } else {
+              // Fallback if measure doesn't work
+              setShowMenu(!showMenu);
+            }
+          }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={styles.menuIcon}>⋯</Text>
+        </TouchableOpacity>
+      )}
 
     </Animated.View>
   );
 
+  // Just use Modal - it renders outside the component tree
   return (
-    <View style={{ position: 'relative' }}>
-      {Platform.OS === 'web' ? (
-        // Simplified version for web without gesture handlers
-        todoContent
-      ) : (
-        <PanGestureHandler
-          enabled={isDragEnabled}
-          onGestureEvent={handlePanGestureEvent}
-          onHandlerStateChange={handlePanStateChange}
-        >
-          <Swipeable
-            ref={swipeableRef}
-            renderLeftActions={renderLeftAction}
-            renderRightActions={onDelete ? renderRightAction : undefined}
-            enabled={!isDragging}
-          >
-            {todoContent}
-          </Swipeable>
-        </PanGestureHandler>
-      )}
+    <View>
+      {todoContent}
       
-      {/* Floating Context Menu */}
-      {showMenu && (
-        <>
-          <TouchableOpacity 
-            style={styles.menuBackdrop} 
-            onPress={() => setShowMenu(false)}
-            activeOpacity={1}
-          />
-          <View style={styles.floatingMenu}>
-            <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
-              <Text style={styles.menuText}>✏️ Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={handleDuplicate}>
-              <Text style={styles.menuText}>📋 Duplicate</Text>
-            </TouchableOpacity>
-            {onDelete && (
-              <TouchableOpacity style={[styles.menuItem, styles.deleteMenuItem]} onPress={handleDelete}>
-                <Text style={[styles.menuText, styles.deleteMenuText]}>🗑️ Delete</Text>
+      {/* Modal renders at app root level - won't be clipped */}
+      <Modal
+        visible={showMenu}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setShowMenu(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowMenu(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={[styles.contextMenu, {
+              position: 'absolute',
+              top: menuPosition.y,
+              left: Math.max(10, menuPosition.x - 120), // Keep menu on screen
+            }]}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
+                <Text style={styles.menuText}>Edit</Text>
               </TouchableOpacity>
-            )}
+              <TouchableOpacity style={styles.menuItem} onPress={handleDuplicate}>
+                <Text style={styles.menuText}>Duplicate</Text>
+              </TouchableOpacity>
+              {onDelete && (
+                <TouchableOpacity style={styles.menuItem} onPress={handleDelete}>
+                  <Text style={[styles.menuText, styles.deleteText]}>Delete</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-        </>
-      )}
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 
@@ -307,6 +361,20 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background.elevated,
     borderRadius: theme.borderRadius.md,
     marginHorizontal: theme.spacing.xs,
+  },
+  beingDraggedContainer: {
+    opacity: 0.7,
+    transform: [{ scale: 1.02 }],
+    shadowColor: theme.colors.jade.main,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  dragOverContainer: {
+    borderTopWidth: 3,
+    borderTopColor: theme.colors.jade.main,
+    backgroundColor: theme.colors.jade.light + '20', // 20% opacity
   },
   checkbox: {
     width: 22,
@@ -394,48 +462,52 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background.primary,
     minHeight: 36,
   },
-  // Floating context menu styles
-  menuBackdrop: {
-    position: 'absolute',
-    top: -1000,
-    left: -1000,
-    right: -1000,
-    bottom: -1000,
-    zIndex: 9998,
+  // Modal menu styles
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
-  floatingMenu: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
+  modalContent: {
+    flex: 1,
+    position: 'relative',
+  },
+  contextMenu: {
     backgroundColor: theme.colors.background.elevated,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border.light,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 8,
-    zIndex: 9999,
+    elevation: 10,
     minWidth: 140,
     paddingVertical: theme.spacing.xs,
   },
   menuItem: {
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.border.light,
   },
-  deleteMenuItem: {
-    borderBottomWidth: 0,
-  },
   menuText: {
     fontSize: theme.typography.sizes.base,
     color: theme.colors.text.primary,
-    fontWeight: theme.typography.weights.medium,
   },
-  deleteMenuText: {
+  deleteText: {
     color: theme.colors.error,
+  },
+  // Menu button styles
+  menuButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuIcon: {
+    fontSize: 20,
+    color: theme.colors.text.secondary,
+    fontWeight: theme.typography.weights.bold,
   },
   // Drag handle styles
   dragHandle: {
@@ -446,8 +518,9 @@ const styles = StyleSheet.create({
   },
   dragIcon: {
     fontSize: 18,
-    color: theme.colors.text.secondary,
+    color: theme.colors.jade.main,
     lineHeight: 18,
     letterSpacing: -2,
+    fontWeight: theme.typography.weights.bold,
   },
 });

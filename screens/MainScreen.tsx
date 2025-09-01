@@ -10,7 +10,9 @@ import {
   Image,
   Text,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -31,9 +33,13 @@ export const MainScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const colorScheme = useColorScheme();
 
-  // Generate days for present and future
+  // Generate days for past, present, and future
   const today = getStartOfToday();
+  const pastDays = generateDaySequence(new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000), 14).reverse();
   const futureDays = generateDaySequence(today, 30);
+  
+  // State for past days scrolling
+  const [showingPastDays, setShowingPastDays] = useState(false);
 
   // Load todos from storage
   const loadTodos = useCallback(async () => {
@@ -53,50 +59,120 @@ export const MainScreen: React.FC = () => {
     loadTodos();
   }, [loadTodos]);
 
+  // State for rollover UI
+  const [showRolloverUI, setShowRolloverUI] = useState(false);
+  const [overdueTodos, setOverdueTodos] = useState<Todo[]>([]);
+  
   // Check for overdue todos and handle rollover
   useEffect(() => {
     const checkOverdueTodos = async () => {
       if (todos.length === 0) return;
       
       const today = getStartOfToday();
-      const overdueTodos = todos.filter(todo => 
+      const overdueItems = todos.filter(todo => 
         !todo.completedAt && 
         !todo.longTerm && 
         isOverdue(todo.scheduledFor)
       );
       
-      if (overdueTodos.length > 0) {
-        // Ask user if they want to roll over overdue todos
-        Alert.alert(
-          'Overdue Todos',
-          `You have ${overdueTodos.length} overdue todo${overdueTodos.length > 1 ? 's' : ''}. Would you like to move them to today?`,
-          [
-            {
-              text: 'No',
-              style: 'cancel',
-            },
-            {
-              text: 'Yes',
-              onPress: async () => {
-                // Update all overdue todos to today
-                for (const todo of overdueTodos) {
-                  const updatedTodo = {
-                    ...todo,
-                    scheduledFor: today,
-                  };
-                  await todoStore.upsert(updatedTodo);
-                }
-                await loadTodos();
-                Alert.alert('Success', 'Overdue todos have been moved to today');
-              },
-            },
-          ],
-        );
+      if (overdueItems.length > 0) {
+        setOverdueTodos(overdueItems);
+        // Show rollover UI if there are overdue todos
+        setShowRolloverUI(true);
+      } else {
+        setOverdueTodos([]);
+        setShowRolloverUI(false);
       }
     };
     
     checkOverdueTodos();
   }, [todos]);
+  
+  // Handle rollover of a single overdue todo to today
+  const handleRolloverSingleToToday = async (todo: Todo) => {
+    try {
+      const today = getStartOfToday();
+      
+      // Update the todo to today
+      const updatedTodo = {
+        ...todo,
+        scheduledFor: today,
+      };
+      await todoStore.upsert(updatedTodo);
+      
+      // Provide haptic feedback
+      if (Platform.OS === 'ios') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      // Remove this todo from the overdue list
+      setOverdueTodos(prevTodos => prevTodos.filter(t => t.id !== todo.id));
+      await loadTodos();
+      
+      // If no more overdue todos, hide the UI
+      if (overdueTodos.length <= 1) {
+        setShowRolloverUI(false);
+      }
+    } catch (error) {
+      console.error('Failed to roll over todo:', error);
+      Alert.alert('Error', 'Failed to roll over todo');
+    }
+  };
+  
+  // Mark a single overdue todo as completed
+  const handleMarkSingleComplete = async (todo: Todo) => {
+    try {
+      // Mark the todo as completed
+      const updatedTodo = {
+        ...todo,
+        completedAt: new Date(),
+      };
+      await todoStore.upsert(updatedTodo);
+      
+      // Provide haptic feedback
+      if (Platform.OS === 'ios') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      // Remove this todo from the overdue list
+      setOverdueTodos(prevTodos => prevTodos.filter(t => t.id !== todo.id));
+      await loadTodos();
+      
+      // If no more overdue todos, hide the UI
+      if (overdueTodos.length <= 1) {
+        setShowRolloverUI(false);
+      }
+    } catch (error) {
+      console.error('Failed to mark todo as completed:', error);
+      Alert.alert('Error', 'Failed to mark todo as completed');
+    }
+  };
+  
+  // Disregard a single overdue todo (leave it in the past)
+  const handleDisregardSingle = async (todo: Todo) => {
+    try {
+      // Remove this todo from the overdue list without changing its status
+      setOverdueTodos(prevTodos => prevTodos.filter(t => t.id !== todo.id));
+      
+      // Provide haptic feedback
+      if (Platform.OS === 'ios') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      
+      // If no more overdue todos, hide the UI
+      if (overdueTodos.length <= 1) {
+        setShowRolloverUI(false);
+      }
+    } catch (error) {
+      console.error('Failed to disregard todo:', error);
+      Alert.alert('Error', 'Failed to process todo');
+    }
+  };
+  
+  // Dismiss rollover UI without taking action
+  const handleDismissRollover = () => {
+    setShowRolloverUI(false);
+  };
 
   // Add new todo to specific date
   const handleAddTodo = async (title: string, scheduledFor: Date) => {
@@ -340,10 +416,114 @@ export const MainScreen: React.FC = () => {
         />
       </View>
       
-      <FlatList
-        data={futureDays}
+      {/* Navigation Tabs */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, !showingPastDays && styles.activeTab]} 
+          onPress={() => {
+            setShowingPastDays(false);
+            if (Platform.OS === 'ios') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+          }}
+        >
+          <Text style={[styles.tabText, !showingPastDays && styles.activeTabText]}>
+            Future
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, showingPastDays && styles.activeTab]}
+          onPress={() => {
+            setShowingPastDays(true);
+            if (Platform.OS === 'ios') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+          }}
+        >
+          <Text style={[styles.tabText, showingPastDays && styles.activeTabText]}>
+            Past
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Rollover UI */}
+      {showRolloverUI && (
+        <View style={styles.rolloverContainer}>
+          <View style={styles.rolloverHeader}>
+            <MaterialIcons name="warning" size={24} color="#f59e0b" /* amber-500 */ />
+            <Text style={styles.rolloverTitle}>
+              {overdueTodos.length} Overdue {overdueTodos.length === 1 ? 'Task' : 'Tasks'}
+            </Text>
+            <TouchableOpacity onPress={handleDismissRollover} style={styles.dismissButton}>
+              <MaterialIcons name="close" size={20} color={theme.colors.text.secondary} />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.overdueList}>
+            {overdueTodos.map((todo) => (
+              <View key={todo.id} style={styles.overdueItemContainer}>
+                <View style={styles.overdueItem}>
+                  <MaterialIcons name="event-busy" size={16} color="#f59e0b" /* amber-500 */ />
+                  <Text style={styles.overdueItemText} numberOfLines={1} ellipsizeMode="tail">
+                    {todo.title}
+                  </Text>
+                </View>
+                
+                <View style={styles.overdueItemActions}>
+                  <TouchableOpacity 
+                    style={styles.overdueItemAction}
+                    onPress={() => handleRolloverSingleToToday(todo)}
+                  >
+                    <MaterialIcons name="today" size={20} color={theme.colors.jade.main} />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.overdueItemAction}
+                    onPress={() => handleMarkSingleComplete(todo)}
+                  >
+                    <MaterialIcons name="check" size={20} color={theme.colors.text.secondary} />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.overdueItemAction}
+                    onPress={() => handleDisregardSingle(todo)}
+                  >
+                    <MaterialIcons name="close" size={20} color={theme.colors.text.tertiary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+          
+          <View style={styles.rolloverLegend}>
+            <View style={styles.legendItem}>
+              <MaterialIcons name="today" size={16} color={theme.colors.jade.main} />
+              <Text style={styles.legendText}>Move to Today</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <MaterialIcons name="check" size={16} color={theme.colors.text.secondary} />
+              <Text style={styles.legendText}>Mark Complete</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <MaterialIcons name="close" size={16} color={theme.colors.text.tertiary} />
+              <Text style={styles.legendText}>Disregard</Text>
+            </View>
+          </View>
+        </View>
+      )}
+      
 
-        ListFooterComponent={null}
+      
+      <FlatList
+        data={showingPastDays ? pastDays : futureDays}
+        ListHeaderComponent={showingPastDays ? (
+          <View style={styles.pastDaysHeader}>
+            <Text style={styles.pastDaysHeaderText}>
+              Showing previous {pastDays.length} days
+            </Text>
+          </View>
+        ) : null}
         renderItem={renderDaySection}
         keyExtractor={(date) => date.toISOString()}
         refreshControl={
@@ -380,5 +560,117 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxl * 2,
     paddingTop: theme.spacing.sm, // Reduced since we have header
   },
-
+  tabContainer: {
+    flexDirection: 'row',
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.background.secondary,
+    overflow: 'hidden',
+    ...theme.shadows.sm,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: theme.spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeTab: {
+    backgroundColor: theme.colors.jade.main,
+  },
+  tabText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.secondary,
+  },
+  activeTabText: {
+    color: theme.colors.text.inverse,
+    fontWeight: theme.typography.weights.semibold,
+  },
+  pastDaysHeader: {
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: theme.borderRadius.md,
+  },
+  pastDaysHeaderText: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  rolloverContainer: {
+    backgroundColor: theme.colors.background.elevated,
+    borderRadius: theme.borderRadius.lg,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    padding: theme.spacing.md,
+    ...theme.shadows.md,
+    borderLeftWidth: 4,
+    borderLeftColor: "#f59e0b", /* amber-500 */
+  },
+  rolloverHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  rolloverTitle: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+    flex: 1,
+    marginLeft: theme.spacing.sm,
+  },
+  dismissButton: {
+    padding: theme.spacing.xs,
+  },
+  overdueList: {
+    marginBottom: theme.spacing.md,
+  },
+  overdueItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: theme.spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.border.light,
+  },
+  overdueItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  overdueItemText: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    marginLeft: theme.spacing.sm,
+    flex: 1,
+  },
+  overdueItemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  overdueItemAction: {
+    padding: theme.spacing.xs,
+    marginLeft: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
+  },
+  rolloverLegend: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.border.light,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legendText: {
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.text.tertiary,
+    marginLeft: theme.spacing.xs,
+  },
 });

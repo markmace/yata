@@ -1,4 +1,4 @@
-package com.yourname.yata
+package com.mark.yata
 
 import android.os.Build
 import android.os.Bundle

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "yata-app",
+    "name": "YATA",
     "slug": "yata-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourname.yata"
+      "bundleIdentifier": "com.mark.yata"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yourname.yata"
+      "package": "com.mark.yata"
     },
     "web": {
       "favicon": "./assets/favicon.png"

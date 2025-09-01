@@ -10,6 +10,8 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { TodoDatePicker } from './TodoDatePicker';
 import { Swipeable, PanGestureHandler, State } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { Todo } from '../types/todo';
@@ -24,6 +26,7 @@ interface TodoItemProps {
   onDelete?: (id: string) => void;
   onEdit?: (id: string, newTitle: string) => void;
   onDuplicate?: (todo: Todo) => void;
+  onMove?: (todo: Todo, newDate: Date) => void;
   onPress?: (todo: Todo) => void;
   drag?: () => void; // For react-native-draggable-flatlist
   isActive?: boolean; // For react-native-draggable-flatlist
@@ -36,16 +39,19 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   onDelete,
   onEdit,
   onDuplicate,
+  onMove,
   onPress,
   drag,
   isActive = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.title);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const swipeableRef = useRef<Swipeable>(null);
   const scale = useRef(new Animated.Value(1)).current;
   
   const isCompleted = !!todo.completedAt;
+  const isLongTerm = !!todo.longTerm;
 
   const handlePress = () => {
     if (onPress) {
@@ -112,6 +118,21 @@ export const TodoItem: React.FC<TodoItemProps> = ({
     swipeableRef.current?.close();
   };
 
+  const handleMove = () => {
+    // Light haptic for move
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setShowDatePicker(true);
+    swipeableRef.current?.close();
+  };
+
+  const handleSelectDate = (date: Date) => {
+    if (onMove) {
+      onMove(todo, date);
+    }
+  };
+
   // Scale animation for active drag state
   React.useEffect(() => {
     if (isActive && Platform.OS === 'ios') {
@@ -146,6 +167,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
             style={styles.actionTouchable}
             onPress={handleDelete}
           >
+            <MaterialIcons name="delete" size={22} color="#ffffff" />
             <Text style={styles.deleteText}>Delete</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -153,11 +175,11 @@ export const TodoItem: React.FC<TodoItemProps> = ({
     );
   };
 
-  // Right actions for edit and duplicate (swipe right)
+  // Right actions for edit, duplicate, and move (swipe right)
   const renderRightActions = (progress: Animated.AnimatedAddition<number>) => {
     const translateX = progress.interpolate({
       inputRange: [0, 1],
-      outputRange: [160, 0], // 2 buttons × 80 width
+      outputRange: [240, 0], // 3 buttons × 80 width
       extrapolate: 'clamp',
     });
 
@@ -169,11 +191,22 @@ export const TodoItem: React.FC<TodoItemProps> = ({
 
     return (
       <Animated.View style={[styles.rightActions, { transform: [{ translateX }] }]}>
+        <Animated.View style={[styles.actionButton, styles.moveButton, { transform: [{ scale }] }]}>
+          <TouchableOpacity
+            style={styles.actionTouchable}
+            onPress={handleMove}
+          >
+            <MaterialIcons name="calendar-today" size={22} color="#ffffff" />
+            <Text style={styles.moveText}>Move</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
         <Animated.View style={[styles.actionButton, styles.editButton, { transform: [{ scale }] }]}>
           <TouchableOpacity
             style={styles.actionTouchable}
             onPress={handleEdit}
           >
+            <MaterialIcons name="edit" size={22} color="#ffffff" />
             <Text style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -183,6 +216,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
             style={styles.actionTouchable}
             onPress={handleDuplicate}
           >
+            <Ionicons name="copy-outline" size={22} color="#ffffff" />
             <Text style={styles.duplicateText}>Copy</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -195,6 +229,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       style={[
         styles.container,
         isCompleted && styles.completedContainer,
+        isLongTerm && styles.longTermContainer,
         isActive && styles.draggingContainer,
         {
           transform: [{ scale }],
@@ -202,7 +237,11 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       ]}
     >
       <TouchableOpacity
-        style={[styles.checkbox, isCompleted && styles.checkboxCompleted]}
+                    style={[
+              styles.checkbox, 
+              isCompleted && styles.checkboxCompleted,
+              isLongTerm && styles.checkboxLongTerm
+            ]}
         onPress={handleToggleComplete}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
@@ -232,6 +271,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
             style={[
               styles.title,
               isCompleted && styles.completedTitle,
+              isLongTerm && styles.longTermTitle,
             ]}
             numberOfLines={2}
           >
@@ -258,15 +298,25 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   );
 
   return (
-    <Swipeable
-      ref={swipeableRef}
-      renderLeftActions={renderLeftAction}
-      renderRightActions={renderRightActions}
-      leftThreshold={30}
-      rightThreshold={30}
-    >
-      {todoContent}
-    </Swipeable>
+    <>
+      <Swipeable
+        ref={swipeableRef}
+        renderLeftActions={renderLeftAction}
+        renderRightActions={renderRightActions}
+        leftThreshold={30}
+        rightThreshold={30}
+      >
+        {todoContent}
+      </Swipeable>
+
+      {/* Date Picker Modal */}
+      <TodoDatePicker
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSelectDate={handleSelectDate}
+        currentDate={todo.scheduledFor}
+      />
+    </>
   );
 
 
@@ -296,6 +346,10 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     marginHorizontal: theme.spacing.xs,
   },
+  longTermContainer: {
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.jade.dark,
+  },
   checkbox: {
     width: 22,
     height: 22,
@@ -310,6 +364,9 @@ const styles = StyleSheet.create({
   checkboxCompleted: {
     backgroundColor: theme.colors.jade.main,
     borderColor: theme.colors.jade.main,
+  },
+  checkboxLongTerm: {
+    borderColor: theme.colors.jade.dark,
   },
   checkmark: {
     color: theme.colors.text.inverse,
@@ -330,6 +387,10 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: theme.colors.text.tertiary,
   },
+  longTermTitle: {
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.jade.dark,
+  },
   // Swipe action styles
   deleteAction: {
     flex: 1,
@@ -340,7 +401,7 @@ const styles = StyleSheet.create({
   },
   rightActions: {
     flexDirection: 'row',
-    width: 160, // 2 buttons × 80 width
+    width: 240, // 3 buttons × 80 width
   },
   actionButton: {
     width: 80,
@@ -354,34 +415,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    paddingVertical: theme.spacing.sm,
   },
   actionIcon: {
     fontSize: 20,
     marginBottom: 4,
   },
   deleteButton: {
-    backgroundColor: '#dc2626', // Red-600
+    backgroundColor: theme.colors.actions.delete,
   },
   deleteText: {
     color: '#ffffff',
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
+    marginTop: 4,
   },
   editButton: {
-    backgroundColor: theme.colors.jade.main,
+    backgroundColor: theme.colors.actions.edit,
   },
   editText: {
     color: '#ffffff',
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
+    marginTop: 4,
   },
   duplicateButton: {
-    backgroundColor: theme.colors.jade.dark,
+    backgroundColor: theme.colors.actions.copy,
   },
   duplicateText: {
     color: '#ffffff',
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
+    marginTop: 4,
+  },
+  moveButton: {
+    backgroundColor: theme.colors.actions.move,
+  },
+  moveText: {
+    color: '#ffffff',
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.semibold,
+    marginTop: 4,
   },
   // Edit functionality styles
   editContainer: {

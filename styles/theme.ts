@@ -10,9 +10,12 @@ const baseColors = {
   },
   
   // System colors
-  success: '#71717a',
-  warning: '#f59e0b',
-  error: '#dc2626',
+  success: '#22c55e', // Green-500
+  warning: '#f59e0b', // Amber-500
+  error: '#dc2626',   // Red-600
+  info: '#3b82f6',    // Blue-500
+  edit: '#8b5cf6',    // Violet-500
+  copy: '#0ea5e9',    // Sky-500
   
   // Pure values
   white: '#ffffff',
@@ -60,6 +63,15 @@ const lightTheme = {
       },
     },
     
+    // Action colors
+    actions: {
+      delete: '#dc2626',   // Red-600
+      edit: '#8b5cf6',     // Violet-500
+      copy: '#0ea5e9',     // Sky-500
+      complete: '#22c55e', // Green-500
+      move: '#f59e0b',     // Amber-500
+    },
+    
     // Overlays
     overlay: 'rgba(0, 0, 0, 0.3)',
   },
@@ -103,6 +115,15 @@ const darkTheme = {
         medium: '#3f3f46',
         high: '#450a0a',
       },
+    },
+    
+    // Action colors
+    actions: {
+      delete: '#ef4444',   // Red-500
+      edit: '#a78bfa',     // Violet-400
+      copy: '#38bdf8',     // Sky-400
+      complete: '#4ade80', // Green-400
+      move: '#fbbf24',     // Amber-400
     },
     
     // Overlays

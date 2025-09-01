@@ -1,4 +1,4 @@
-![YATA Logo](docs/yata_logo_dark_text.png)
+<img src="docs/yata_logo_dark_text.png" alt="YATA Logo" width="250"/>
 
 Yet Another TODO App. 
 
@@ -51,7 +51,12 @@ The core philosophy: tasks are fluid, not fixed. A task assigned to Tuesday that
 - Tap the "+" button on any day to add a todo
 - Tap the checkbox to mark todos complete
 - Swipe left to delete a todo
-- Swipe right to edit or copy a todo
+- Swipe right to access actions:
+  - **Move**: Reschedule a todo to a different day
+  - **Edit**: Change the todo text
+  - **Copy**: Duplicate the todo
+- Long-press and drag to reorder todos
+- Tap on completed todos section to expand/collapse
 
 ### Design Philosophy
 
@@ -62,10 +67,19 @@ YATA is built for people who ask "What matters right now?" rather than "What mig
 - If you don't complete something today, it's okay - just move it to another day
 - Keep the interface clean and distraction-free
 
+## Features
+
+- **Daily Todo Organization**: Todos organized by day with infinite scrolling
+- **Long-Term Goals**: Special section for todos not tied to a specific day
+- **Gesture Controls**: Intuitive swipe actions for common operations
+- **Todo Movement**: Easily move todos between days
+- **Collapsible Completed Todos**: Keep your interface clean by hiding completed items
+- **Drag & Drop Reordering**: Prioritize your todos by reordering them
+
 ## Architecture
 
 ```
-components/     # UI components like TodoItem, DaySection
+components/     # UI components like TodoItem, DaySection, LongTermSection
 screens/        # Main app screens
 services/       # Data storage and business logic
 types/          # TypeScript definitions

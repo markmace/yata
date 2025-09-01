@@ -9,23 +9,27 @@ import {
   Platform,
   Image,
   Text,
+  Dimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Todo } from '../types/todo';
 import { todoStore } from '../services/storage';
 import { DaySection } from '../components/DaySection';
+import { LongTermSection } from '../components/LongTermSection';
 import { theme } from '../styles/theme';
 import {
   getStartOfToday,
   generateDaySequence,
   isSameDay,
+  isOverdue,
 } from '../utils/dateUtils';
 
 export const MainScreen: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLongTerm, setShowLongTerm] = useState(true);
   const colorScheme = useColorScheme();
 
   // Generate 30 days starting from today
@@ -49,8 +53,53 @@ export const MainScreen: React.FC = () => {
     loadTodos();
   }, [loadTodos]);
 
+  // Check for overdue todos and handle rollover
+  useEffect(() => {
+    const checkOverdueTodos = async () => {
+      if (todos.length === 0) return;
+      
+      const today = getStartOfToday();
+      const overdueTodos = todos.filter(todo => 
+        !todo.completedAt && 
+        !todo.longTerm && 
+        isOverdue(todo.scheduledFor)
+      );
+      
+      if (overdueTodos.length > 0) {
+        // Ask user if they want to roll over overdue todos
+        Alert.alert(
+          'Overdue Todos',
+          `You have ${overdueTodos.length} overdue todo${overdueTodos.length > 1 ? 's' : ''}. Would you like to move them to today?`,
+          [
+            {
+              text: 'No',
+              style: 'cancel',
+            },
+            {
+              text: 'Yes',
+              onPress: async () => {
+                // Update all overdue todos to today
+                for (const todo of overdueTodos) {
+                  const updatedTodo = {
+                    ...todo,
+                    scheduledFor: today,
+                  };
+                  await todoStore.upsert(updatedTodo);
+                }
+                await loadTodos();
+                Alert.alert('Success', 'Overdue todos have been moved to today');
+              },
+            },
+          ],
+        );
+      }
+    };
+    
+    checkOverdueTodos();
+  }, [todos]);
+
   // Add new todo to specific date
-  const handleAddTodo = async (title: string, scheduledFor: Date) => {
+  const handleAddTodo = async (title: string, scheduledFor: Date, isLongTerm = false) => {
     try {
       const newTodo: Todo = {
         id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -58,6 +107,7 @@ export const MainScreen: React.FC = () => {
         createdAt: new Date(),
         scheduledFor,
         deleted: false,
+        longTerm: isLongTerm,
       };
 
       await todoStore.upsert(newTodo);
@@ -66,6 +116,11 @@ export const MainScreen: React.FC = () => {
       console.error('Failed to add todo:', error);
       Alert.alert('Error', 'Failed to add todo');
     }
+  };
+  
+  // Add long-term todo
+  const handleAddLongTermTodo = async (title: string, scheduledFor: Date) => {
+    await handleAddTodo(title, scheduledFor, true);
   };
 
   // Toggle todo completion with optimistic updates
@@ -100,16 +155,18 @@ export const MainScreen: React.FC = () => {
     }
   };
 
-  // Delete todo immediately
+  // Delete todo immediately with optimistic update
   const handleDelete = async (id: string) => {
-    console.log('MainScreen handleDelete called with id:', id);
     try {
+      // Optimistic update
+      setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
+      
+      // Actual deletion
       await todoStore.softDelete(id);
-      console.log('softDelete completed, reloading todos');
-      await loadTodos();
-      console.log('Todos reloaded successfully');
     } catch (error) {
       console.error('Failed to delete todo:', error);
+      // Revert optimistic update on error
+      await loadTodos();
       if (Platform.OS === 'web') {
         alert('Error: Failed to delete todo');
       } else {
@@ -133,6 +190,64 @@ export const MainScreen: React.FC = () => {
     } catch (error) {
       console.error('Failed to edit todo:', error);
       Alert.alert('Error', 'Failed to edit todo');
+    }
+  };
+
+  // Toggle todo long-term status
+  const handleToggleLongTerm = async (todo: Todo) => {
+    try {
+      // Optimistic update
+      setTodos(prevTodos =>
+        prevTodos.map(t =>
+          t.id === todo.id
+            ? {
+                ...t,
+                longTerm: !t.longTerm,
+              }
+            : t
+        )
+      );
+
+      // Actual update
+      const updatedTodo = {
+        ...todo,
+        longTerm: !todo.longTerm,
+      };
+      await todoStore.upsert(updatedTodo);
+    } catch (error) {
+      console.error('Failed to toggle long-term status:', error);
+      // Revert optimistic update on error
+      await loadTodos();
+      Alert.alert('Error', 'Failed to update todo');
+    }
+  };
+
+  // Move todo to different date
+  const handleMoveTodo = async (todo: Todo, newDate: Date) => {
+    try {
+      // Optimistic update
+      setTodos(prevTodos =>
+        prevTodos.map(t =>
+          t.id === todo.id
+            ? {
+                ...t,
+                scheduledFor: newDate,
+              }
+            : t
+        )
+      );
+
+      // Actual update
+      const updatedTodo = {
+        ...todo,
+        scheduledFor: newDate,
+      };
+      await todoStore.upsert(updatedTodo);
+    } catch (error) {
+      console.error('Failed to move todo:', error);
+      // Revert optimistic update on error
+      await loadTodos();
+      Alert.alert('Error', 'Failed to move todo');
     }
   };
 
@@ -186,7 +301,12 @@ export const MainScreen: React.FC = () => {
 
   // Get todos for a specific day
   const getTodosForDay = (date: Date): Todo[] => {
-    return todos.filter(todo => isSameDay(todo.scheduledFor, date));
+    return todos.filter(todo => !todo.longTerm && isSameDay(todo.scheduledFor, date));
+  };
+
+  // Get long-term todos
+  const getLongTermTodos = (): Todo[] => {
+    return todos.filter(todo => todo.longTerm);
   };
 
   const renderDaySection = ({ item: date }: { item: Date }) => {
@@ -201,6 +321,7 @@ export const MainScreen: React.FC = () => {
         onDelete={handleDelete}
         onEdit={handleEdit}
         onDuplicate={handleDuplicate}
+        onMove={handleMoveTodo}
         onReorderTodos={handleReorderTodos}
       />
     );
@@ -213,13 +334,30 @@ export const MainScreen: React.FC = () => {
     >
       <StatusBar style="light" />
       
-      {/* Minimal Logo Header */}
+      {/* Logo Header */}
       <View style={styles.header}>
-        <Text style={styles.logoText}>YATA</Text>
+        <Image
+          source={colorScheme === 'dark' ? require('../assets/yata_logo_light_text.png') : require('../assets/yata_logo_dark_text.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </View>
       
       <FlatList
         data={days}
+        ListHeaderComponent={
+          <LongTermSection
+            todos={getLongTermTodos()}
+            onAddTodo={handleAddLongTermTodo}
+            onToggleComplete={handleToggleComplete}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            onDuplicate={handleDuplicate}
+            onMove={handleMoveTodo}
+            onToggleLongTerm={handleToggleLongTerm}
+            onReorderTodos={handleReorderTodos}
+          />
+        }
         renderItem={renderDaySection}
         keyExtractor={(date) => date.toISOString()}
         refreshControl={
@@ -246,12 +384,10 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.md,
     alignItems: 'center',
   },
-  logoText: {
-    fontSize: 28,
-    fontWeight: '300',
-    color: theme.colors.text.primary,
-    letterSpacing: 3,
-    opacity: 0.7,
+  logo: {
+    height: 40,
+    width: Dimensions.get('window').width * 0.3,
+    opacity: 0.9,
   },
   contentContainer: {
     padding: theme.spacing.lg,

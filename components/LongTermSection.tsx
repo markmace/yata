@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,15 @@ import {
   TouchableOpacity,
   TextInput,
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Todo } from '../types/todo';
 import { TodoItem } from './TodoItem';
-import { formatDayHeader } from '../utils/dateUtils';
 import { theme } from '../styles/theme';
 
-interface DaySectionProps {
-  date: Date;
+interface LongTermSectionProps {
   todos: Todo[];
   onAddTodo: (title: string, date: Date) => void;
   onToggleComplete: (id: string) => void;
@@ -25,12 +23,12 @@ interface DaySectionProps {
   onEdit: (id: string, newTitle: string) => void;
   onDuplicate: (todo: Todo) => void;
   onMove?: (todo: Todo, newDate: Date) => void;
+  onToggleLongTerm?: (todo: Todo) => void;
   onReorderTodos?: (todos: Todo[]) => void;
   onTodoPress?: (todo: Todo) => void;
 }
 
-export const DaySection: React.FC<DaySectionProps> = ({
-  date,
+export const LongTermSection: React.FC<LongTermSectionProps> = ({
   todos,
   onAddTodo,
   onToggleComplete,
@@ -38,18 +36,21 @@ export const DaySection: React.FC<DaySectionProps> = ({
   onEdit,
   onDuplicate,
   onMove,
+  onToggleLongTerm,
   onReorderTodos,
   onTodoPress,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
-  // Drag and drop is always enabled
 
   const handleAddTodo = () => {
     const trimmedValue = inputValue.trim();
     if (trimmedValue) {
-      onAddTodo(trimmedValue, date);
+      // Create with today's date but mark as long-term
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      onAddTodo(trimmedValue, today);
       setInputValue('');
       setShowInput(false);
     }
@@ -57,6 +58,9 @@ export const DaySection: React.FC<DaySectionProps> = ({
 
   const handleAddPress = () => {
     setShowInput(true);
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   };
 
   const handleCancel = () => {
@@ -71,8 +75,6 @@ export const DaySection: React.FC<DaySectionProps> = ({
     const allTodos = [...data, ...completedTodos];
     onReorderTodos(allTodos);
   };
-
-  // Remove drag mode toggle - not needed anymore
 
   const renderTodoItem = ({ item: todo, drag, isActive }: RenderItemParams<Todo>) => (
     <TodoItem
@@ -97,9 +99,9 @@ export const DaySection: React.FC<DaySectionProps> = ({
   return (
     <ContainerComponent {...containerProps} style={styles.container}>
       <View style={styles.innerContainer}>
-        {/* Day Header */}
+        {/* Section Header */}
         <View style={styles.header}>
-          <Text style={styles.dayTitle}>{formatDayHeader(date)}</Text>
+          <Text style={styles.title}>Long-Term Goals</Text>
           <View style={styles.headerRight}>
             {activeTodos.length > 0 && (
               <View style={styles.countBadge}>
@@ -123,7 +125,7 @@ export const DaySection: React.FC<DaySectionProps> = ({
               style={styles.input}
               value={inputValue}
               onChangeText={setInputValue}
-              placeholder="What needs to be done?"
+              placeholder="Add a long-term goal..."
               placeholderTextColor={theme.colors.text.tertiary}
               autoFocus
               returnKeyType="done"
@@ -178,10 +180,11 @@ export const DaySection: React.FC<DaySectionProps> = ({
           </View>
         )}
 
-        {/* Empty state for days with no todos */}
+        {/* Empty state */}
         {todos.length === 0 && !showInput && (
-          <View style={styles.emptyDay}>
-            <Text style={styles.emptyText}>No todos yet</Text>
+          <View style={styles.emptySection}>
+            <Text style={styles.emptyText}>No long-term goals yet</Text>
+            <Text style={styles.emptySubtext}>Add goals that don't need to be scheduled for a specific day</Text>
           </View>
         )}
       </View>
@@ -198,7 +201,7 @@ const styles = StyleSheet.create({
     ...theme.shadows.sm,
   },
   innerContainer: {
-    backgroundColor: theme.colors.todo.background,
+    backgroundColor: theme.colors.background.tertiary,
     borderRadius: theme.borderRadius.lg,
     borderWidth: theme.borderWidth.thin,
     borderColor: theme.colors.border.light,
@@ -213,19 +216,18 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.border.default,
     backgroundColor: theme.colors.background.secondary,
   },
-  dayTitle: {
+  title: {
     fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.medium,
     color: theme.colors.text.primary,
     letterSpacing: -0.3,
   },
-
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   countBadge: {
-    backgroundColor: theme.colors.jade.main,
+    backgroundColor: theme.colors.jade.dark,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.full,
@@ -243,7 +245,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.jade.main,
+    backgroundColor: theme.colors.jade.dark,
     alignItems: 'center',
     justifyContent: 'center',
     ...theme.shadows.sm,
@@ -290,13 +292,20 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     fontWeight: theme.typography.weights.medium,
   },
-  emptyDay: {
-    paddingVertical: theme.spacing.lg,
+  emptySection: {
+    paddingVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
     alignItems: 'center',
   },
   emptyText: {
+    fontSize: theme.typography.sizes.base,
+    color: theme.colors.text.secondary,
+    fontStyle: 'italic',
+    marginBottom: theme.spacing.sm,
+  },
+  emptySubtext: {
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.text.tertiary,
-    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });

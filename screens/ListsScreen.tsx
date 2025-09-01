@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Todo, TodoList } from '../types/todo';
 import { todoStore } from '../services/storage';
 import { listStore } from '../services/listStorage';
@@ -254,7 +255,19 @@ export const ListsScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Lists</Text>
+        {showListManager ? (
+          <View style={styles.headerWithBack}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => setShowListManager(false)}
+            >
+              <MaterialIcons name="arrow-back" size={24} color={theme.colors.text.primary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Manage Lists</Text>
+          </View>
+        ) : (
+          <Text style={styles.headerTitle}>Lists</Text>
+        )}
       </View>
       
       {showListManager ? (
@@ -303,7 +316,8 @@ export const ListsScreen: React.FC = () => {
           ListHeaderComponent={
             <View style={styles.addListSection}>
               <Text style={styles.addListText}>
-                Create and manage your lists to organize todos by project, category, or any way you like.
+                Create custom lists to organize your long-term goals by project, category, or any way you like.
+                These lists will appear at the top of your daily view.
               </Text>
               <TouchableOpacity
                 style={styles.manageButton}
@@ -334,6 +348,14 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
     letterSpacing: 3,
     opacity: 0.7,
+  },
+  headerWithBack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    padding: theme.spacing.sm,
+    marginRight: theme.spacing.md,
   },
   contentContainer: {
     padding: theme.spacing.lg,

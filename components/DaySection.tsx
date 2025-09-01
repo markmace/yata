@@ -64,32 +64,48 @@ export const DaySection: React.FC<DaySectionProps> = ({
     setShowInput(false);
   };
 
-  const handleReorderTodos = (data: Todo[]) => {
+  const activeTodos = todos.filter(todo => !todo.completedAt);
+  const completedTodos = todos.filter(todo => !!todo.completedAt);
+
+  const handleReorderTodos = useCallback((data: Todo[]) => {
     if (!onReorderTodos) return;
     
-    // Combine with completed todos
-    const allTodos = [...data, ...completedTodos];
+    // Log the reordered data
+    console.log(`Reordering ${data.length} todos for ${formatDayHeader(date)}`);
+    
+    // Assign sortOrder to each todo based on its position
+    const reorderedTodos = data.map((todo, index) => ({
+      ...todo,
+      sortOrder: index
+    }));
+    
+    // Combine with completed todos (keeping completed todos at the end)
+    const allTodos = [...reorderedTodos, ...completedTodos];
+    
+    // Call the parent handler
     onReorderTodos(allTodos);
-  };
+  }, [onReorderTodos, completedTodos, date]);
 
   // Remove drag mode toggle - not needed anymore
 
-  const renderTodoItem = ({ item: todo, drag, isActive }: RenderItemParams<Todo>) => (
-    <TodoItem
-      todo={todo}
-      onToggleComplete={onToggleComplete}
-      onDelete={onDelete}
-      onEdit={onEdit}
-      onDuplicate={onDuplicate}
-      onMove={onMove}
-      onPress={onTodoPress}
-      drag={drag}
-      isActive={isActive}
-    />
-  );
-
-  const activeTodos = todos.filter(todo => !todo.completedAt);
-  const completedTodos = todos.filter(todo => !!todo.completedAt);
+  const renderTodoItem = useCallback(({ item: todo, drag, isActive }: RenderItemParams<Todo>) => {
+    // Log to verify drag function is being passed correctly
+    console.log(`Rendering todo item: ${todo.id}, drag function available: ${!!drag}`);
+    
+    return (
+      <TodoItem
+        todo={todo}
+        onToggleComplete={onToggleComplete}
+        onDelete={onDelete}
+        onEdit={onEdit}
+        onDuplicate={onDuplicate}
+        onMove={onMove}
+        onPress={onTodoPress}
+        drag={drag}
+        isActive={isActive}
+      />
+    );
+  }, [onToggleComplete, onDelete, onEdit, onDuplicate, onMove, onTodoPress]);
 
   const ContainerComponent = Platform.OS === 'web' ? View : BlurView;
   const containerProps = Platform.OS === 'web' ? {} : { intensity: 20 };
@@ -140,8 +156,11 @@ export const DaySection: React.FC<DaySectionProps> = ({
             renderItem={renderTodoItem}
             keyExtractor={(item) => item.id}
             onDragEnd={({ data }) => handleReorderTodos(data)}
+            containerStyle={styles.dragContainer}
+            activationDistance={5}
+            dragItemOverflow={true}
+            autoscrollSpeed={50}
             autoscrollThreshold={50}
-            activationDistance={20} // Small activation distance for easy dragging
           />
         )}
 
@@ -298,5 +317,10 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.text.tertiary,
     fontStyle: 'italic',
+  },
+  dragContainer: {
+    width: '100%',
+    overflow: 'visible', // Allow items to overflow during dragging
+    minHeight: 10, // Ensure container has some height even when empty
   },
 });

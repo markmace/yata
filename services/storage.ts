@@ -10,9 +10,13 @@ interface StorableTodo {
   title: string;
   notes?: string;
   createdAt: DateString;
+  updatedAt?: DateString;
   scheduledFor: DateString;
   completedAt?: DateString;
   deleted: boolean;
+  sortOrder?: number;
+  longTerm?: boolean;
+  listId?: string;
 }
 
 export class TodoStore {
@@ -25,6 +29,7 @@ export class TodoStore {
     return {
       ...todo,
       createdAt: todo.createdAt.toISOString(),
+      updatedAt: todo.updatedAt?.toISOString(),
       scheduledFor: todo.scheduledFor.toISOString(),
       completedAt: todo.completedAt?.toISOString(),
     };
@@ -35,6 +40,7 @@ export class TodoStore {
     return {
       ...storable,
       createdAt: new Date(storable.createdAt),
+      updatedAt: storable.updatedAt ? new Date(storable.updatedAt) : undefined,
       scheduledFor: new Date(storable.scheduledFor),
       completedAt: storable.completedAt ? new Date(storable.completedAt) : undefined,
     };
@@ -78,13 +84,25 @@ export class TodoStore {
     }, 300); // 300ms debounce
   }
 
-  // Get all todos, sorted by scheduledFor
+  // Get all todos, sorted by scheduledFor and then by sortOrder
   async getTodos(): Promise<Todo[]> {
     await this.ensureLoaded();
     
     const todos = Array.from(this.cache.values())
       .filter(todo => !todo.deleted) // Filter out soft-deleted todos
-      .sort((a, b) => a.scheduledFor.getTime() - b.scheduledFor.getTime());
+      .sort((a, b) => {
+        // First sort by scheduledFor date
+        const dateComparison = a.scheduledFor.getTime() - b.scheduledFor.getTime();
+        if (dateComparison !== 0) return dateComparison;
+        
+        // If same date, sort by sortOrder if available
+        if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+          return a.sortOrder - b.sortOrder;
+        }
+        
+        // Fall back to creation time for items without sortOrder
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      });
     
     return todos;
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -13,10 +13,11 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { Todo } from '../types/todo';
 import { todoStore } from '../services/storage';
 import { DaySection } from '../components/DaySection';
-import { LongTermSection } from '../components/LongTermSection';
+import { PastDaysSection } from '../components/PastDaysSection';
 import { theme } from '../styles/theme';
 import {
   getStartOfToday,
@@ -29,11 +30,12 @@ export const MainScreen: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showLongTerm, setShowLongTerm] = useState(true);
   const colorScheme = useColorScheme();
 
-  // Generate 30 days starting from today
-  const days = generateDaySequence(getStartOfToday(), 30);
+  // Generate days for past, present, and future
+  const today = getStartOfToday();
+  const pastDays = generateDaySequence(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000), 7).reverse();
+  const futureDays = generateDaySequence(today, 30);
 
   // Load todos from storage
   const loadTodos = useCallback(async () => {
@@ -99,7 +101,7 @@ export const MainScreen: React.FC = () => {
   }, [todos]);
 
   // Add new todo to specific date
-  const handleAddTodo = async (title: string, scheduledFor: Date, isLongTerm = false) => {
+  const handleAddTodo = async (title: string, scheduledFor: Date) => {
     try {
       const newTodo: Todo = {
         id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -107,7 +109,6 @@ export const MainScreen: React.FC = () => {
         createdAt: new Date(),
         scheduledFor,
         deleted: false,
-        longTerm: isLongTerm,
       };
 
       await todoStore.upsert(newTodo);
@@ -118,10 +119,7 @@ export const MainScreen: React.FC = () => {
     }
   };
   
-  // Add long-term todo
-  const handleAddLongTermTodo = async (title: string, scheduledFor: Date) => {
-    await handleAddTodo(title, scheduledFor, true);
-  };
+
 
   // Toggle todo completion with optimistic updates
   const handleToggleComplete = async (id: string) => {
@@ -193,34 +191,7 @@ export const MainScreen: React.FC = () => {
     }
   };
 
-  // Toggle todo long-term status
-  const handleToggleLongTerm = async (todo: Todo) => {
-    try {
-      // Optimistic update
-      setTodos(prevTodos =>
-        prevTodos.map(t =>
-          t.id === todo.id
-            ? {
-                ...t,
-                longTerm: !t.longTerm,
-              }
-            : t
-        )
-      );
 
-      // Actual update
-      const updatedTodo = {
-        ...todo,
-        longTerm: !todo.longTerm,
-      };
-      await todoStore.upsert(updatedTodo);
-    } catch (error) {
-      console.error('Failed to toggle long-term status:', error);
-      // Revert optimistic update on error
-      await loadTodos();
-      Alert.alert('Error', 'Failed to update todo');
-    }
-  };
 
   // Move todo to different date
   const handleMoveTodo = async (todo: Todo, newDate: Date) => {
@@ -237,6 +208,11 @@ export const MainScreen: React.FC = () => {
         )
       );
 
+      // Provide haptic feedback for successful move
+      if (Platform.OS === 'ios') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
       // Actual update
       const updatedTodo = {
         ...todo,
@@ -245,6 +221,10 @@ export const MainScreen: React.FC = () => {
       await todoStore.upsert(updatedTodo);
     } catch (error) {
       console.error('Failed to move todo:', error);
+      // Provide haptic feedback for error
+      if (Platform.OS === 'ios') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
       // Revert optimistic update on error
       await loadTodos();
       Alert.alert('Error', 'Failed to move todo');
@@ -254,20 +234,42 @@ export const MainScreen: React.FC = () => {
   // Reorder todos within a day
   const handleReorderTodos = async (reorderedTodos: Todo[]) => {
     try {
-      // Update all todos with new order
+      console.log('Reordering todos:', reorderedTodos.map(t => t.title));
+      
+      // Create a map of the reordered todos with updated sortOrder
       const updates = reorderedTodos.map((todo, index) => ({
         ...todo,
-        // Add an order field or use createdAt to maintain order
-        createdAt: new Date(Date.now() + index), // Simple ordering trick
+        sortOrder: index,
+        updatedAt: new Date()
       }));
       
+      // Optimistic update for immediate UI feedback
+      setTodos(prevTodos => {
+        const reorderedMap = new Map(updates.map(todo => [todo.id, todo]));
+        
+        return prevTodos.map(todo => 
+          reorderedMap.has(todo.id) ? reorderedMap.get(todo.id)! : todo
+        );
+      });
+      
+      // Batch update to storage
       for (const todo of updates) {
         await todoStore.upsert(todo);
       }
       
+      // Provide haptic feedback for successful reordering
+      if (Platform.OS === 'ios') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      
+      // Reload todos to ensure consistency with storage
       await loadTodos();
+      
+      console.log('Reordering completed successfully');
     } catch (error) {
       console.error('Failed to reorder todos:', error);
+      // Reload todos to revert to correct state in case of error
+      await loadTodos();
       Alert.alert('Error', 'Failed to reorder todos');
     }
   };
@@ -301,13 +303,10 @@ export const MainScreen: React.FC = () => {
 
   // Get todos for a specific day
   const getTodosForDay = (date: Date): Todo[] => {
-    return todos.filter(todo => !todo.longTerm && isSameDay(todo.scheduledFor, date));
+    return todos.filter(todo => isSameDay(todo.scheduledFor, date));
   };
 
-  // Get long-term todos
-  const getLongTermTodos = (): Todo[] => {
-    return todos.filter(todo => todo.longTerm);
-  };
+
 
   const renderDaySection = ({ item: date }: { item: Date }) => {
     const dayTodos = getTodosForDay(date);
@@ -344,17 +343,18 @@ export const MainScreen: React.FC = () => {
       </View>
       
       <FlatList
-        data={days}
-        ListHeaderComponent={
-          <LongTermSection
-            todos={getLongTermTodos()}
-            onAddTodo={handleAddLongTermTodo}
+        data={futureDays}
+
+        ListFooterComponent={
+          <PastDaysSection
+            pastDays={pastDays}
+            todos={todos}
             onToggleComplete={handleToggleComplete}
             onDelete={handleDelete}
             onEdit={handleEdit}
             onDuplicate={handleDuplicate}
             onMove={handleMoveTodo}
-            onToggleLongTerm={handleToggleLongTerm}
+            onAddTodo={handleAddTodo}
             onReorderTodos={handleReorderTodos}
           />
         }
@@ -394,4 +394,5 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xxl * 2,
     paddingTop: theme.spacing.sm, // Reduced since we have header
   },
+
 });

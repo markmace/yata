@@ -7,6 +7,7 @@ import {
   Modal,
   FlatList,
   Platform,
+  Animated,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
@@ -19,6 +20,7 @@ interface TodoDatePickerProps {
   onClose: () => void;
   onSelectDate: (date: Date) => void;
   currentDate: Date;
+  todoTitle?: string;
 }
 
 export const TodoDatePicker: React.FC<TodoDatePickerProps> = ({
@@ -26,7 +28,20 @@ export const TodoDatePicker: React.FC<TodoDatePickerProps> = ({
   onClose,
   onSelectDate,
   currentDate,
+  todoTitle,
 }) => {
+  // Animation for modal entry
+  const [fadeAnim] = useState(new Animated.Value(0));
+  
+  React.useEffect(() => {
+    if (visible) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, fadeAnim]);
   // Generate 14 days starting from today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -69,19 +84,19 @@ export const TodoDatePicker: React.FC<TodoDatePickerProps> = ({
   };
 
   const ContainerComponent = Platform.OS === 'web' ? View : BlurView;
-  const containerProps = Platform.OS === 'web' ? {} : { intensity: 80, tint: 'dark' };
+  const containerProps = Platform.OS === 'web' ? {} : { intensity: 80, tint: 'dark' as const };
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="none"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <ContainerComponent {...containerProps} style={styles.modalContainer}>
+      <Animated.View style={[styles.modalOverlay, { opacity: fadeAnim }]}>
+        <ContainerComponent {...containerProps} style={[styles.modalContainer, { transform: [{ scale: fadeAnim }] }]}>
           <View style={styles.header}>
-            <Text style={styles.title}>Move to...</Text>
+            <Text style={styles.title}>{todoTitle ? `Move "${todoTitle.length > 20 ? todoTitle.substring(0, 20) + '...' : todoTitle}"` : 'Move to...'}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <MaterialIcons name="close" size={24} color={theme.colors.text.primary} />
             </TouchableOpacity>
@@ -101,7 +116,7 @@ export const TodoDatePicker: React.FC<TodoDatePickerProps> = ({
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </ContainerComponent>
-      </View>
+      </Animated.View>
     </Modal>
   );
 };

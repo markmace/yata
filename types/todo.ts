@@ -4,11 +4,13 @@ export interface Todo {
   title: string;
   notes?: string;      // Additional details/notes
   createdAt: Date;
+  updatedAt?: Date;    // Last modification timestamp
   scheduledFor: Date;  // This drives your infinite scroll
   completedAt?: Date;
   deleted: boolean;    // Soft delete for undo
   longTerm?: boolean;  // Flag for longer-term todos
   listId?: string;     // ID of the list this todo belongs to
+  sortOrder?: number;  // Explicit ordering within a day/list
 }
 
 // Additional metadata interface for future AI features

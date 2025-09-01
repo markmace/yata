@@ -32,6 +32,15 @@ No constant notifications or attention-grabbing badges. YATA appears when you ne
 ### Priorities Change
 People's goals and tasks naturally evolve over time. We make it easy to let go of things that are no longer important and focus on what matters now.
 
+### Intuitive Interactions
+Our interface should feel natural and follow established patterns. Swiping, dragging, and tapping should behave as users expect. Sliding tasks horizontally reveals actions, while grabbing and moving should allow for reordering. Every interaction should be discoverable and consistent.
+
+### Progressive Disclosure
+Complex features should be accessible but not overwhelming. We show the most common actions upfront and reveal additional functionality when needed. This creates a clean interface that grows with the user's expertise.
+
+### Tactile Feedback
+Digital interactions should feel physical and satisfying. Subtle animations, haptic feedback, and visual cues should make the app feel responsive and alive, without being distracting.
+
 ---
 
 *YATA helps you make steady progress on what matters today.*

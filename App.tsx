@@ -5,7 +5,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
 import { MainScreen } from './screens/MainScreen';
-import { ListsScreen } from './screens/ListsScreen';
 import { theme } from './styles/theme';
 
 const Tab = createBottomTabNavigator();
@@ -17,13 +16,7 @@ export default function App() {
         <Tab.Navigator
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
-              let iconName;
-
-              if (route.name === 'Days') {
-                iconName = 'calendar-today';
-              } else if (route.name === 'Lists') {
-                iconName = 'list';
-              }
+              let iconName: "today" = "today";
 
               return <MaterialIcons name={iconName} size={size} color={color} />;
             },
@@ -32,12 +25,24 @@ export default function App() {
             tabBarStyle: {
               backgroundColor: theme.colors.background.primary,
               borderTopColor: theme.colors.border.light,
+              paddingVertical: 5,
+              height: 60,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '500',
+              paddingBottom: 5,
             },
             headerShown: false,
           })}
         >
-          <Tab.Screen name="Days" component={MainScreen} />
-          <Tab.Screen name="Lists" component={ListsScreen} />
+          <Tab.Screen 
+            name="Days" 
+            component={MainScreen} 
+            options={{ 
+              tabBarLabel: 'My Days',
+            }} 
+          />
         </Tab.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

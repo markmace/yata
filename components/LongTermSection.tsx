@@ -43,6 +43,7 @@ export const LongTermSection: React.FC<LongTermSectionProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true); // Default to collapsed
 
   const handleAddTodo = () => {
     const trimmedValue = inputValue.trim();
@@ -100,56 +101,71 @@ export const LongTermSection: React.FC<LongTermSectionProps> = ({
     <ContainerComponent {...containerProps} style={styles.container}>
       <View style={styles.innerContainer}>
         {/* Section Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Long-Term Goals</Text>
+        <TouchableOpacity
+          style={styles.header}
+          onPress={() => setIsCollapsed(!isCollapsed)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.headerLeft}>
+            <MaterialIcons 
+              name={isCollapsed ? "keyboard-arrow-right" : "keyboard-arrow-down"} 
+              size={24} 
+              color={theme.colors.text.primary} 
+            />
+            <Text style={styles.title}>Long-Term Goals</Text>
+          </View>
           <View style={styles.headerRight}>
             {activeTodos.length > 0 && (
               <View style={styles.countBadge}>
                 <Text style={styles.todoCount}>{activeTodos.length}</Text>
               </View>
             )}
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddPress}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
+            {!isCollapsed && (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddPress}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text style={styles.addButtonText}>+</Text>
+              </TouchableOpacity>
+            )}
           </View>
-        </View>
+        </TouchableOpacity>
 
-        {/* Quick Add Input */}
-        {showInput && (
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={inputValue}
-              onChangeText={setInputValue}
-              placeholder="Add a long-term goal..."
-              placeholderTextColor={theme.colors.text.tertiary}
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={handleAddTodo}
-              onBlur={handleCancel}
-            />
-          </View>
-        )}
+        {!isCollapsed && (
+          <>
+            {/* Quick Add Input */}
+            {showInput && (
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  value={inputValue}
+                  onChangeText={setInputValue}
+                  placeholder="Add a long-term goal..."
+                  placeholderTextColor={theme.colors.text.tertiary}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddTodo}
+                  onBlur={handleCancel}
+                />
+              </View>
+            )}
 
-        {/* Active Todos */}
-        {activeTodos.length > 0 && (
-          <DraggableFlatList
-            data={activeTodos}
-            renderItem={renderTodoItem}
-            keyExtractor={(item) => item.id}
-            onDragEnd={({ data }) => handleReorderTodos(data)}
-            autoscrollThreshold={50}
-            activationDistance={20} // Small activation distance for easy dragging
-          />
-        )}
+            {/* Active Todos */}
+            {activeTodos.length > 0 && (
+              <DraggableFlatList
+                data={activeTodos}
+                renderItem={renderTodoItem}
+                keyExtractor={(item) => item.id}
+                onDragEnd={({ data }) => handleReorderTodos(data)}
+                autoscrollThreshold={50}
+                activationDistance={20} // Small activation distance for easy dragging
+              />
+            )}
 
-        {/* Completed Todos (collapsible) */}
-        {completedTodos.length > 0 && (
-          <View style={styles.completedSection}>
+            {/* Completed Todos (collapsible) */}
+            {completedTodos.length > 0 && (
+              <View style={styles.completedSection}>
             <TouchableOpacity 
               style={styles.completedHeaderContainer}
               onPress={() => setShowCompleted(!showCompleted)}
@@ -177,15 +193,17 @@ export const LongTermSection: React.FC<LongTermSectionProps> = ({
                 onPress={onTodoPress}
               />
             ))}
-          </View>
-        )}
+              </View>
+            )}
 
-        {/* Empty state */}
-        {todos.length === 0 && !showInput && (
-          <View style={styles.emptySection}>
-            <Text style={styles.emptyText}>No long-term goals yet</Text>
-            <Text style={styles.emptySubtext}>Add goals that don't need to be scheduled for a specific day</Text>
-          </View>
+            {/* Empty state */}
+            {todos.length === 0 && !showInput && (
+              <View style={styles.emptySection}>
+                <Text style={styles.emptyText}>No long-term goals yet</Text>
+                <Text style={styles.emptySubtext}>Add goals that don't need to be scheduled for a specific day</Text>
+              </View>
+            )}
+          </>
         )}
       </View>
     </ContainerComponent>
@@ -195,7 +213,7 @@ export const LongTermSection: React.FC<LongTermSectionProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.background.elevated,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md, // Reduced margin
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
     ...theme.shadows.sm,
@@ -210,11 +228,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.colors.border.default,
     backgroundColor: theme.colors.background.secondary,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   title: {
     fontSize: theme.typography.sizes.xl,

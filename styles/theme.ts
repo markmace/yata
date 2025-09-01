@@ -1,21 +1,22 @@
 // Minimalist Todo App Design System
 // Japanese/Scandinavian inspired with light and dark themes
 
+// Cool, calm slate-inspired color palette
 const baseColors = {
-  // Japanese slate - sophisticated warm grays
+  // Primary brand color (cool slate)
   jade: {
-    light: '#a1a1aa',  // Light slate
-    main: '#71717a',   // Japanese slate
-    dark: '#52525b',   // Deep slate
+    light: '#D1D5DB', // Light slate gray
+    main: '#6B7280',  // Slate gray
+    dark: '#4B5563',  // Dark slate gray
   },
   
-  // System colors
-  success: '#22c55e', // Green-500
-  warning: '#f59e0b', // Amber-500
-  error: '#dc2626',   // Red-600
-  info: '#3b82f6',    // Blue-500
-  edit: '#8b5cf6',    // Violet-500
-  copy: '#0ea5e9',    // Sky-500
+  // System colors - cool and calm
+  success: '#9CA3AF', // Cool gray
+  warning: '#D1D5DB', // Light slate
+  error: '#9CA3AF',   // Cool gray
+  info: '#E5E7EB',    // Lighter gray
+  edit: '#9CA3AF',    // Cool gray
+  copy: '#D1D5DB',    // Light slate
   
   // Pure values
   white: '#ffffff',
@@ -63,13 +64,13 @@ const lightTheme = {
       },
     },
     
-    // Action colors
+    // Action colors - cool slate palette
     actions: {
-      delete: '#dc2626',   // Red-600
-      edit: '#8b5cf6',     // Violet-500
-      copy: '#0ea5e9',     // Sky-500
-      complete: '#22c55e', // Green-500
-      move: '#f59e0b',     // Amber-500
+      delete: '#9CA3AF',   // Cool gray
+      edit: '#6B7280',     // Slate gray
+      copy: '#D1D5DB',     // Light slate
+      complete: '#4B5563', // Dark slate
+      move: '#9CA3AF',     // Cool gray
     },
     
     // Overlays
@@ -117,13 +118,13 @@ const darkTheme = {
       },
     },
     
-    // Action colors
+    // Action colors - cool slate palette (darker for dark mode)
     actions: {
-      delete: '#ef4444',   // Red-500
-      edit: '#a78bfa',     // Violet-400
-      copy: '#38bdf8',     // Sky-400
-      complete: '#4ade80', // Green-400
-      move: '#fbbf24',     // Amber-400
+      delete: '#6B7280',   // Slate gray
+      edit: '#4B5563',     // Dark slate
+      copy: '#9CA3AF',     // Cool gray
+      complete: '#374151', // Darker slate
+      move: '#6B7280',     // Slate gray
     },
     
     // Overlays

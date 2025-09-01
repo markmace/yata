@@ -140,9 +140,13 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     
+    // Don't animate scale here since we're using transform in the style
+    // This prevents conflicts between animated values
     Animated.spring(scale, {
-      toValue: isActive ? 1.05 : 1,
+      toValue: 1, // Keep scale at 1 since we're handling it in the style
       useNativeDriver: true,
+      tension: 300,
+      friction: 20,
     }).start();
   }, [isActive, scale]);
 
@@ -284,30 +288,49 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       {drag && (
         <TouchableOpacity 
           style={styles.reorderHandle}
-          onLongPress={drag}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPressIn={drag} // Use onPressIn for immediate activation
+          activeOpacity={0.5}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
-          <View style={styles.reorderIcon}>
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
+          <View style={[
+            styles.reorderIcon,
+            isActive && styles.activeReorderIcon
+          ]}>
+            <MaterialIcons 
+              name="drag-handle" 
+              size={28} 
+              color={isActive ? theme.colors.jade.main : theme.colors.text.secondary} 
+            />
           </View>
         </TouchableOpacity>
       )}
     </Animated.View>
   );
 
+  // If drag is available, this means we're in a draggable context
+  // In that case, we'll disable swipe actions to prevent conflicts
+  const isDraggable = !!drag;
+
   return (
     <>
-      <Swipeable
-        ref={swipeableRef}
-        renderLeftActions={renderLeftAction}
-        renderRightActions={renderRightActions}
-        leftThreshold={30}
-        rightThreshold={30}
-      >
-        {todoContent}
-      </Swipeable>
+      {isDraggable ? (
+        // When in draggable mode, don't use Swipeable to avoid gesture conflicts
+        todoContent
+      ) : (
+        // When not in draggable mode, use Swipeable for swipe actions
+        <Swipeable
+          ref={swipeableRef}
+          renderLeftActions={renderLeftAction}
+          renderRightActions={renderRightActions}
+          friction={2}
+          leftThreshold={40}
+          rightThreshold={40}
+          overshootLeft={false}
+          overshootRight={false}
+        >
+          {todoContent}
+        </Swipeable>
+      )}
 
       {/* Date Picker Modal */}
       <TodoDatePicker
@@ -315,6 +338,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         onClose={() => setShowDatePicker(false)}
         onSelectDate={handleSelectDate}
         currentDate={todo.scheduledFor}
+        todoTitle={todo.title}
       />
     </>
   );
@@ -340,11 +364,15 @@ const styles = StyleSheet.create({
     shadowColor: theme.colors.jade.main,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 5,
     elevation: 8,
     backgroundColor: theme.colors.background.elevated,
     borderRadius: theme.borderRadius.md,
-    marginHorizontal: theme.spacing.xs,
+    zIndex: 999, // Ensure it appears above other items
+    width: '100%', // Maintain width when dragging
+    borderWidth: 1,
+    borderColor: theme.colors.jade.main,
+    transform: [{ scale: 1.02 }], // Slight scale effect
   },
   longTermContainer: {
     borderLeftWidth: 4,
@@ -476,22 +504,40 @@ const styles = StyleSheet.create({
   // Reorder handle styles
   reorderHandle: {
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: theme.spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'transparent',
+    marginLeft: theme.spacing.sm,
+    minWidth: 44, // Increased touch target
+    minHeight: 44, // Increased touch target
   },
   reorderIcon: {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 16,
-    height: 16,
+    width: 28,
+    height: 28,
+    backgroundColor: theme.colors.background.secondary,
+    borderRadius: theme.borderRadius.sm,
+    padding: 2,
+  },
+  activeReorderIcon: {
+    backgroundColor: theme.colors.jade.light,
+    borderWidth: 1,
+    borderColor: theme.colors.jade.main,
+  },
+  dotRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 12,
+    marginVertical: 1,
   },
   dot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: theme.colors.jade.main,
-    marginVertical: 1,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.text.primary,
+    marginVertical: 1.5,
   },
 });

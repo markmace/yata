@@ -17,7 +17,6 @@ import * as Haptics from 'expo-haptics';
 import { Todo } from '../types/todo';
 import { todoStore } from '../services/storage';
 import { DaySection } from '../components/DaySection';
-import { PastDaysSection } from '../components/PastDaysSection';
 import { theme } from '../styles/theme';
 import {
   getStartOfToday,
@@ -32,9 +31,8 @@ export const MainScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const colorScheme = useColorScheme();
 
-  // Generate days for past, present, and future
+  // Generate days for present and future
   const today = getStartOfToday();
-  const pastDays = generateDaySequence(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000), 7).reverse();
   const futureDays = generateDaySequence(today, 30);
 
   // Load todos from storage
@@ -345,19 +343,7 @@ export const MainScreen: React.FC = () => {
       <FlatList
         data={futureDays}
 
-        ListFooterComponent={
-          <PastDaysSection
-            pastDays={pastDays}
-            todos={todos}
-            onToggleComplete={handleToggleComplete}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-            onDuplicate={handleDuplicate}
-            onMove={handleMoveTodo}
-            onAddTodo={handleAddTodo}
-            onReorderTodos={handleReorderTodos}
-          />
-        }
+        ListFooterComponent={null}
         renderItem={renderDaySection}
         keyExtractor={(date) => date.toISOString()}
         refreshControl={

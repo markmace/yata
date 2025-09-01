@@ -31,7 +31,7 @@ This runs the full setup process automatically.
 
 ## When to Use Each Script
 
-### 🚨 **Metro Bundler Errors** (like we just fixed)
+### **Metro Bundler Errors** (like we just fixed)
 ```bash
 npm run setup-full
 ```
@@ -44,13 +44,13 @@ npm run setup-check
 npm run doctor
 ```
 
-### 📦 **Dependency Updates**
+### **Dependency Updates**
 ```bash
 npm run setup-update
 ```
 Uses `npx expo install --fix` to update to compatible versions.
 
-### 🧹 **Clean Install Only**
+### **Clean Install Only**
 ```bash
 npm run setup-clean
 ```
@@ -72,53 +72,8 @@ node scripts/setup-expo.js 4  # Full reset
 node scripts/setup-expo.js 5  # Fix peer deps only
 ```
 
-## What the Scripts Do
-
-### Full Reset Process (`setup-full`)
-1. ✅ Removes `node_modules`, `package-lock.json`, `yarn.lock`
-2. ✅ Runs `npm install` (with `--force` fallback)
-3. ✅ Runs `npx expo-doctor` to check environment
-4. ✅ Auto-installs missing peer dependencies
-5. ✅ Checks TypeScript compilation
-6. ✅ Verifies main project files exist
-
 ### Auto-Fix Features
 - **Missing peer dependencies** - Automatically detects and installs
 - **Version conflicts** - Uses Expo-compatible versions
 - **Metro bundler issues** - Clean install resolves most problems
 - **TypeScript errors** - Reports issues for manual fixing
-
-## Troubleshooting
-
-### Script Won't Run
-```bash
-# Make sure you're in project root
-cd /path/to/yata
-npm run setup
-```
-
-### Still Having Issues
-1. Try the bash version (Mac/Linux only):
-   ```bash
-   ./scripts/setup-expo.sh
-   ```
-
-2. Manual reset:
-   ```bash
-   rm -rf node_modules package-lock.json
-   npm install
-   npx expo-doctor
-   ```
-
-3. Check Node.js version:
-   ```bash
-   node --version  # Should be 16+ for Expo
-   ```
-
-## Files Checked
-- ✅ `App.tsx` - Main app component
-- ✅ `index.ts` - Entry point
-- ✅ `components/TodoItem.tsx` - Todo item component
-- ✅ `components/DaySection.tsx` - Day section component
-
-These scripts ensure your YATA app runs smoothly with all the modern drag & drop features! 🎯

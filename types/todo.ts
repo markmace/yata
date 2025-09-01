@@ -9,7 +9,6 @@ export interface Todo {
   completedAt?: Date;
   deleted: boolean;    // Soft delete for undo
   longTerm?: boolean;  // Flag for longer-term todos
-  listId?: string;     // ID of the list this todo belongs to
   sortOrder?: number;  // Explicit ordering within a day/list
 }
 
@@ -35,14 +34,6 @@ export interface TodoSection {
 // Filter states
 export type TodoFilter = 'all' | 'uncompleted' | 'completed';
 
-// List interface for custom todo lists
-export interface TodoList {
-  id: string;
-  name: string;
-  color?: string;
-  createdAt: Date;
-  deleted: boolean;
-}
 
 // Date utilities type helpers
 export type DateString = string; // ISO string format for storage

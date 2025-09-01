@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>yata-app</string>
-          <string>com.yata.app</string>
+          <string>com.yourname.yata</string>
         </array>
       </dict>
       <dict>

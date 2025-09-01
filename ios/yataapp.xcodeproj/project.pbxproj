@@ -8,28 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		173060D14AE0628E0629351C /* libPods-yataapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E4E491B3434C59EC768A540 /* libPods-yataapp.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		671DE7DBC5999706A59FA776 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 419442FC55F1B74A0C9B1CDF /* ExpoModulesProvider.swift */; };
-		B024B92A8BCC52CF902D998B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4650907BC2A9A41A7F9D4202 /* PrivacyInfo.xcprivacy */; };
+		8A6D4D7350222C13BCDE5401 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF07FA7BC65948959628E954 /* ExpoModulesProvider.swift */; };
+		9E026C8B9A1A771D5178AD62 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 77C8911E7AC10DF107208294 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D853D10173EFA8144B3C576F /* libPods-yataapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D8604423DFE57C7E18B80DA /* libPods-yataapp.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0A30FA91C88B5027A3E8801A /* Pods-yataapp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-yataapp.release.xcconfig"; path = "Target Support Files/Pods-yataapp/Pods-yataapp.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* yataapp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = yataapp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = yataapp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = yataapp/Info.plist; sourceTree = "<group>"; };
-		1D8604423DFE57C7E18B80DA /* libPods-yataapp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-yataapp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		419442FC55F1B74A0C9B1CDF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-yataapp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		4650907BC2A9A41A7F9D4202 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = yataapp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		6F110F5C4428AD125930817C /* Pods-yataapp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-yataapp.debug.xcconfig"; path = "Target Support Files/Pods-yataapp/Pods-yataapp.debug.xcconfig"; sourceTree = "<group>"; };
+		77C8911E7AC10DF107208294 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = yataapp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		9E4E491B3434C59EC768A540 /* libPods-yataapp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-yataapp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = yataapp/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		D0B5B687528152890247E865 /* Pods-yataapp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-yataapp.debug.xcconfig"; path = "Target Support Files/Pods-yataapp/Pods-yataapp.debug.xcconfig"; sourceTree = "<group>"; };
+		C4525E167B9B150613AAA076 /* Pods-yataapp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-yataapp.release.xcconfig"; path = "Target Support Files/Pods-yataapp/Pods-yataapp.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = yataapp/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* yataapp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "yataapp-Bridging-Header.h"; path = "yataapp/yataapp-Bridging-Header.h"; sourceTree = "<group>"; };
+		FF07FA7BC65948959628E954 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-yataapp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,21 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D853D10173EFA8144B3C576F /* libPods-yataapp.a in Frameworks */,
+				173060D14AE0628E0629351C /* libPods-yataapp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		085BED4C35EBFD89C5B13C86 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				718AD63F6ED665318CB1EB34 /* yataapp */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* yataapp */ = {
 			isa = PBXGroup;
 			children = (
@@ -61,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				4650907BC2A9A41A7F9D4202 /* PrivacyInfo.xcprivacy */,
+				77C8911E7AC10DF107208294 /* PrivacyInfo.xcprivacy */,
 			);
 			name = yataapp;
 			sourceTree = "<group>";
@@ -70,27 +62,25 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				1D8604423DFE57C7E18B80DA /* libPods-yataapp.a */,
+				9E4E491B3434C59EC768A540 /* libPods-yataapp.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		718AD63F6ED665318CB1EB34 /* yataapp */ = {
+		370485B26ECD00D4FE6787F7 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				419442FC55F1B74A0C9B1CDF /* ExpoModulesProvider.swift */,
+				3931319A1FCF07A7785536DA /* yataapp */,
 			);
-			name = yataapp;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
-		7F13B87049654C65BFE7FEDF /* Pods */ = {
+		3931319A1FCF07A7785536DA /* yataapp */ = {
 			isa = PBXGroup;
 			children = (
-				D0B5B687528152890247E865 /* Pods-yataapp.debug.xcconfig */,
-				0A30FA91C88B5027A3E8801A /* Pods-yataapp.release.xcconfig */,
+				FF07FA7BC65948959628E954 /* ExpoModulesProvider.swift */,
 			);
-			name = Pods;
-			path = Pods;
+			name = yataapp;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -107,8 +97,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				7F13B87049654C65BFE7FEDF /* Pods */,
-				085BED4C35EBFD89C5B13C86 /* ExpoModulesProviders */,
+				CC67FD2FDA56F0666CFB52BA /* Pods */,
+				370485B26ECD00D4FE6787F7 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -132,6 +122,16 @@
 			path = yataapp/Supporting;
 			sourceTree = "<group>";
 		};
+		CC67FD2FDA56F0666CFB52BA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				6F110F5C4428AD125930817C /* Pods-yataapp.debug.xcconfig */,
+				C4525E167B9B150613AAA076 /* Pods-yataapp.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "yataapp" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				409D419BAAAC5E0658299CD1 /* [Expo] Configure project */,
+				E3136720498A3E047E00687D /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				14FBD67AC1D3EAC18D667AA1 /* [CP] Embed Pods Frameworks */,
+				C1277A8D2E3198CAD6E0FB23 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -167,6 +167,8 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
+						DevelopmentTeam = "J7J3WS2846";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -196,7 +198,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				B024B92A8BCC52CF902D998B /* PrivacyInfo.xcprivacy in Resources */,
+				9E026C8B9A1A771D5178AD62 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,43 +242,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		14FBD67AC1D3EAC18D667AA1 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-yataapp/Pods-yataapp-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-yataapp/Pods-yataapp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		409D419BAAAC5E0658299CD1 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-yataapp/expo-configure-project.sh\"\n";
-		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -315,6 +280,43 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-yataapp/Pods-yataapp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		C1277A8D2E3198CAD6E0FB23 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-yataapp/Pods-yataapp-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-yataapp/Pods-yataapp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E3136720498A3E047E00687D /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-yataapp/expo-configure-project.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -323,7 +325,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				671DE7DBC5999706A59FA776 /* ExpoModulesProvider.swift in Sources */,
+				8A6D4D7350222C13BCDE5401 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,7 +334,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D0B5B687528152890247E865 /* Pods-yataapp.debug.xcconfig */;
+			baseConfigurationReference = 6F110F5C4428AD125930817C /* Pods-yataapp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -356,19 +358,22 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.yata.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.yata;
 				PRODUCT_NAME = yataapp;
 				SWIFT_OBJC_BRIDGING_HEADER = "yataapp/yataapp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "J7J3WS2846";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0A30FA91C88B5027A3E8801A /* Pods-yataapp.release.xcconfig */;
+			baseConfigurationReference = C4525E167B9B150613AAA076 /* Pods-yataapp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -387,12 +392,15 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.yata.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.yata;
 				PRODUCT_NAME = yataapp;
 				SWIFT_OBJC_BRIDGING_HEADER = "yataapp/yataapp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "J7J3WS2846";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

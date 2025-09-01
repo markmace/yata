@@ -20,66 +20,11 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
-*.xcarchive
 project.xcworkspace
 .xcode.env.local
-
-# Obj-C/Swift specific
-*.dSYM.zip
-*.dSYM
 
 # Bundle artifacts
 *.jsbundle
 
 # CocoaPods
 /Pods/
-
-# Temporary files created by Metro
-.metro-health-check*
-
-# Local Podspecs
-*.podspec.json
-*.podspec.yml
-
-# Debug files
-*.dSYM/
-*.dSYM.zip
-*.dSYM.tar.gz
-
-# Playgrounds
-timeline.xctimeline
-playground.xcworkspace
-
-# Swift Package Manager
-.build/
-Packages/
-Package.pins
-Package.resolved
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
-*.xcworkspace/*
-!*.xcworkspace/contents.xcworkspacedata
-
-# fastlane specific
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
-
-# Code Injection
-iOSInjectionProject/
-
-# App packaging
-*.ipa
-*.dSYM.zip
-*.dSYM
-
-# Expo
-.expo/
-.expo-shared/
-web-build/
-ios/Pods/
-ios/build/
-ios/DerivedData/

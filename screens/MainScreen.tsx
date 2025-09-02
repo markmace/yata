@@ -30,7 +30,6 @@ import {
 export const MainScreen: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const colorScheme = useColorScheme();
 
   // Generate days for past, present, and future
@@ -49,8 +48,6 @@ export const MainScreen: React.FC = () => {
     } catch (error) {
       console.error('Failed to load todos:', error);
       Alert.alert('Error', 'Failed to load todos');
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -71,7 +68,7 @@ export const MainScreen: React.FC = () => {
       const today = getStartOfToday();
       const overdueItems = todos.filter(todo => 
         !todo.completedAt && 
-        !todo.longTerm && 
+ 
         isOverdue(todo.scheduledFor)
       );
       
@@ -354,7 +351,7 @@ export const MainScreen: React.FC = () => {
       const newTodo: Todo = {
         id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: originalTodo.title,
-        notes: originalTodo.notes,
+  
         createdAt: new Date(),
         scheduledFor: originalTodo.scheduledFor,
         deleted: false,

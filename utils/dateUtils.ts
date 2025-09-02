@@ -1,6 +1,19 @@
-// Date utility functions as mentioned in the project plan
+// Date utility functions for the current product
 
-// Don't use moment.js or date-fns yet - keep it simple
+export const isOverdue = (date: Date): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+  return date < today;
+};
+
+// Get the start of today
+export const getStartOfToday = (): Date => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+};
+
+// Helper functions for date formatting
 export const isToday = (date: Date): boolean => {
   return date.toDateString() === new Date().toDateString();
 };
@@ -24,48 +37,8 @@ export const isThisWeek = (date: Date): boolean => {
   return date >= startOfWeek && date <= endOfWeek;
 };
 
-export const isOverdue = (date: Date): boolean => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Start of today
-  return date < today;
-};
-
-// Normalize time - important for consistent day comparisons
 export const normalizeToDay = (date: Date): Date => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-};
-
-// Get the start of today
-export const getStartOfToday = (): Date => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return today;
-};
-
-// Get a formatted date string for display
-export const formatDateForDisplay = (date: Date): string => {
-  const now = new Date();
-  
-  if (isToday(date)) return 'Today';
-  if (isTomorrow(date)) return 'Tomorrow';
-  if (isOverdue(date)) return 'Overdue';
-  
-  // For this week, show day name
-  if (isThisWeek(date)) {
-    return date.toLocaleDateString('en-US', { weekday: 'long' });
-  }
-  
-  // For other dates, show month and day
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
-// Create a new todo with proper date setup
-export const createTodoDate = (scheduledFor?: Date): Date => {
-  if (scheduledFor) {
-    return normalizeToDay(scheduledFor);
-  }
-  // Default to today
-  return getStartOfToday();
 };
 
 // Generate an array of dates starting from today

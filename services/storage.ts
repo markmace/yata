@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Todo, DateString } from '../types/todo';
+import { Todo } from '../types/todo';
 
 // Storage keys
 const TODOS_KEY = '@yata_todos';
@@ -8,14 +8,14 @@ const TODOS_KEY = '@yata_todos';
 interface StorableTodo {
   id: string;
   title: string;
-  notes?: string;
-  createdAt: DateString;
-  updatedAt?: DateString;
-  scheduledFor: DateString;
-  completedAt?: DateString;
+
+  createdAt: string;
+  updatedAt?: string;
+  scheduledFor: string;
+  completedAt?: string;
   deleted: boolean;
   sortOrder?: number;
-  longTerm?: boolean;
+
   listId?: string;
 }
 

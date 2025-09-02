@@ -51,7 +51,6 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   const scale = useRef(new Animated.Value(1)).current;
   
   const isCompleted = !!todo.completedAt;
-  const isLongTerm = !!todo.longTerm;
 
   const handlePress = () => {
     if (onPress) {
@@ -233,7 +232,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       style={[
         styles.container,
         isCompleted && styles.completedContainer,
-        isLongTerm && styles.longTermContainer,
+
         isActive && styles.draggingContainer,
         {
           transform: [{ scale }],
@@ -244,7 +243,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                     style={[
               styles.checkbox, 
               isCompleted && styles.checkboxCompleted,
-              isLongTerm && styles.checkboxLongTerm
+
             ]}
         onPress={handleToggleComplete}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -275,7 +274,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
             style={[
               styles.title,
               isCompleted && styles.completedTitle,
-              isLongTerm && styles.longTermTitle,
+
             ]}
             numberOfLines={2}
           >
@@ -366,10 +365,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.jade.main,
     transform: [{ scale: 1.02 }], // Slight scale effect
   },
-  longTermContainer: {
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.jade.dark,
-  },
+
   checkbox: {
     width: 22,
     height: 22,
@@ -385,9 +381,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.jade.main,
     borderColor: theme.colors.jade.main,
   },
-  checkboxLongTerm: {
-    borderColor: theme.colors.jade.dark,
-  },
+
   checkmark: {
     color: theme.colors.text.inverse,
     fontSize: theme.typography.sizes.sm,
@@ -407,10 +401,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: theme.colors.text.tertiary,
   },
-  longTermTitle: {
-    fontWeight: theme.typography.weights.medium,
-    color: theme.colors.jade.dark,
-  },
+
   // Swipe action styles
   deleteAction: {
     flex: 1,

@@ -307,30 +307,22 @@ export const TodoItem: React.FC<TodoItemProps> = ({
     </Animated.View>
   );
 
-  // If drag is available, this means we're in a draggable context
-  // In that case, we'll disable swipe actions to prevent conflicts
-  const isDraggable = !!drag;
-
+  // Allow both drag-and-drop and swipe gestures to work together
+  // The drag handle is on the right side, swipe gestures work on the main content
   return (
     <>
-      {isDraggable ? (
-        // When in draggable mode, don't use Swipeable to avoid gesture conflicts
-        todoContent
-      ) : (
-        // When not in draggable mode, use Swipeable for swipe actions
-        <Swipeable
-          ref={swipeableRef}
-          renderLeftActions={renderLeftAction}
-          renderRightActions={renderRightActions}
-          friction={2}
-          leftThreshold={40}
-          rightThreshold={40}
-          overshootLeft={false}
-          overshootRight={false}
-        >
-          {todoContent}
-        </Swipeable>
-      )}
+      <Swipeable
+        ref={swipeableRef}
+        renderLeftActions={renderLeftAction}
+        renderRightActions={renderRightActions}
+        friction={2}
+        leftThreshold={40}
+        rightThreshold={40}
+        overshootLeft={false}
+        overshootRight={false}
+      >
+        {todoContent}
+      </Swipeable>
 
       {/* Date Picker Modal */}
       <TodoDatePicker

@@ -1,3 +1,2 @@
 - Improve style of tiles
 - Add drop + drag to 'Move' TODO items between days (currently only possible with 'Move' drag-over command)
-- Clean up any unneeded files for the current product we have
